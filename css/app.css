@@ -17,13 +17,18 @@ button,input,select{font:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:2px solid var(--t1200);outline-offset:2px}
 
-#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:560px;margin:0 auto;background:var(--bg)}
+/* iPhone instalado, con barra de estado translúcida: WebKit calcula la ventana más corta que la pantalla
+   (le resta la barra de estado) y deja un hueco bajo la app. Se fuerza la altura real de la pantalla. */
+@media (display-mode:standalone){html{min-height:calc(100% + env(safe-area-inset-top,0px))}}
+html.ios-sa,html.ios-sa body{height:var(--app-h);min-height:var(--app-h)}
+html.ios-sa #app{bottom:auto;height:var(--app-h)}
+#app{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;max-width:560px;margin:0 auto;background:var(--bg)}
 #bar{display:flex;align-items:center;gap:6px;padding:calc(var(--sat) + 10px) 14px 10px;background:var(--bg);border-bottom:1px solid var(--line);min-height:calc(var(--sat) + 52px)}
 #bar h1{margin:0;font:700 21px/1.15 var(--cond);letter-spacing:.2px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #back{background:none;border:0;padding:6px;margin-left:-8px;border-radius:8px;display:grid;place-items:center;color:var(--t1200)}
 #back[hidden]{display:none}
-#view{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px 28px;outline:none;overscroll-behavior:contain}
-#tabs{display:grid;grid-template-columns:repeat(5,1fr);background:#161d24;border-top:1px solid var(--line);padding-bottom:var(--sab)}
+#view{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:16px 16px 28px;outline:none;overscroll-behavior:contain}
+#tabs{flex:none;display:grid;grid-template-columns:repeat(5,1fr);background:#161d24;border-top:1px solid var(--line);padding-bottom:var(--sab)}
 #tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px 7px;font:600 11.5px/1.2 var(--body);color:var(--dim)}
 #tabs svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
 #tabs a.on{color:var(--t1200)}

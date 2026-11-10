@@ -8,7 +8,7 @@ Manual de bolsillo de la industria del acero. Aplicación web instalable (PWA), 
 |---|---|
 | **Procesos** | 21 procesos animados, de la mina al producto terminado: minería, peletizado, coque, alto horno, reducción directa, BOF, horno eléctrico, metalurgia secundaria, colada continua, laminación en caliente y en frío, largos, decapado, recocido, galvanizado, pintado, hojalata, tubería con y sin costura, rolado de perfiles y trefilado. Cada uno con entradas, salidas, pasos, parámetros típicos, reacciones y puntos clave. |
 | **Química** | Simulador de composición, diagrama hierro-carbono interactivo, 20 elementos y su efecto, microestructuras, tratamientos térmicos, propiedades, familias de aceros y 63 grados con química, propiedades y usos. |
-| **Normas** | 65 normas explicadas (ASTM, SAE, API, ASME, AWS, EN, JIS, NMX, ISO, GB) con grados, resistencias, usos y equivalencias; guía para leer designaciones, calibres, recubrimientos y varilla. |
+| **Normas** | 68 normas explicadas (ASTM, SAE, API, ASME, AWS, EN, JIS, NMX, ISO, GB) con grados, resistencias, usos y equivalencias; guía completa de grados de galvanizado (calidades, estructurales, pesos de capa, equivalencias) y de designaciones, calibres y varilla. |
 | **Industria** | Panorama mundial y de México, ranking worldsteel 2025 y perfiles de 28 empresas y grupos: historia, líderes, accionistas y especialización. |
 | **Inicio** | Buscador global y glosario. |
 
@@ -39,7 +39,7 @@ css/app.css             Estilos
 js/core.js              Router, bloqueo de zoom, instalación
 js/anim-lib.js          Piezas SVG animadas reutilizables
 js/anim-1..3.js         Una animación por proceso
-js/data-*.js            Contenido: procesos, química, grados, normas, industria
+js/data-*.js            Contenido: procesos, química, grados, normas, galvanizado, industria
 js/sim.js               Simulador de aceros
 js/fec.js               Diagrama hierro-carbono
 js/views.js             Pantallas

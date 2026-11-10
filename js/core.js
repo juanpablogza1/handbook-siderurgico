@@ -81,9 +81,30 @@ S.start = function () {
     var href = a.getAttribute('href');
     S.go(href, a.parentNode && a.parentNode.id === 'tabs' && href !== S.cur ? true : false);
   });
+  S.fitIOS();
   S.noZoom();
   S.pwa();
   S.route(true);
+};
+
+/* ---------- iPhone instalado: la app debe ocupar la pantalla completa ----------
+   En modo standalone con barra de estado translúcida, iOS reporta una ventana más corta
+   que la pantalla y la barra inferior queda flotando. screen.height sí es confiable. */
+S.fitIOS = function () {
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (!ios || !S.isStandalone()) return;
+  var root = document.documentElement;
+  function set() {
+    var portrait = !window.matchMedia || matchMedia('(orientation: portrait)').matches;
+    var h = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width);
+    h = Math.max(h, window.innerHeight || 0);
+    root.style.setProperty('--app-h', h + 'px');
+    root.classList.add('ios-sa');
+    window.scrollTo(0, 0);
+  }
+  set();
+  window.addEventListener('resize', set);
+  window.addEventListener('orientationchange', function () { setTimeout(set, 300); });
 };
 
 /* ---------- Sin zoom: pellizco, doble toque, ctrl+rueda, ctrl+/- ---------- */
