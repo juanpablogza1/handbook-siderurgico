@@ -85,8 +85,8 @@
       out.innerHTML = '<div class="small">' + c.toFixed(2) + ' % C a ' + Math.round(t / 5) * 5 + ' °C</div><b>' + f[0] + '</b><div style="font-size:14.5px;line-height:1.4">' + f[1] + '</div>';
     }
     function ev(e) {
-      var r = svg.getBoundingClientRect(), p = e.touches ? e.touches[0] : e;
-      var sx = (p.clientX - r.left) / r.width * 360, sy = (p.clientY - r.top) / r.height * 258;
+      var p = e.touches ? e.touches[0] : e, f = S.localFrac(svg, p.clientX, p.clientY);
+      var sx = f[0] * 360, sy = f[1] * 258;
       set((sx - X0) / (X1 - X0) * CMAX, TMIN + (Y0 - sy) / (Y0 - Y1) * (TMAX - TMIN));
     }
     var down = false;

@@ -82,6 +82,7 @@ S.start = function () {
     S.go(href, a.parentNode && a.parentNode.id === 'tabs' && href !== S.cur ? true : false);
   });
   S.fitIOS();
+  S.lockPortrait();
   S.noZoom();
   S.pwa();
   S.route(true);
@@ -105,6 +106,44 @@ S.fitIOS = function () {
   set();
   window.addEventListener('resize', set);
   window.addEventListener('orientationchange', function () { setTimeout(set, 300); });
+};
+
+/* ---------- Sin modo horizontal ----------
+   iOS no permite bloquear la orientación de una app web. Cuando el teléfono se acuesta,
+   se contragira el contenedor para que la app siga viéndose en vertical.
+   Solo en teléfonos: en tabletas y computadoras no se toca nada. */
+S.lockPortrait = function () {
+  var root = document.documentElement;
+  try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(function () {}); } catch (e) {}
+  function angle() {
+    var a = typeof window.orientation === 'number' ? window.orientation
+      : (screen.orientation && typeof screen.orientation.angle === 'number' ? screen.orientation.angle : 0);
+    return ((a % 360) + 360) % 360;
+  }
+  function set() {
+    var phone = Math.min(screen.width, screen.height) <= 500 && (!window.matchMedia || matchMedia('(pointer: coarse)').matches);
+    var a = angle(), land = window.innerWidth > window.innerHeight;
+    root.classList.remove('rot', 'rot-l', 'rot-r');
+    if (!phone || !land || (a !== 90 && a !== 270)) return;
+    var lw = window.innerWidth, lh = window.innerHeight;
+    if (root.classList.contains('ios-sa')) { lw = Math.max(screen.width, screen.height, lw); lh = Math.max(Math.min(screen.width, screen.height), lh); }
+    root.style.setProperty('--pw', lh + 'px');   // ancho en vertical = alto de la pantalla acostada
+    root.style.setProperty('--ph', lw + 'px');
+    root.classList.add('rot', a === 90 ? 'rot-l' : 'rot-r');
+    window.scrollTo(0, 0);
+  }
+  S.rot = function () { return root.classList.contains('rot-l') ? -1 : root.classList.contains('rot-r') ? 1 : 0; };
+  set();
+  window.addEventListener('resize', set);
+  window.addEventListener('orientationchange', function () { set(); setTimeout(set, 300); });
+  if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', function () { setTimeout(set, 50); });
+};
+/* Posición de un toque dentro de un elemento, como fracción 0–1, aun con la app contragirada */
+S.localFrac = function (el, cx, cy) {
+  var r = el.getBoundingClientRect(), k = S.rot ? S.rot() : 0;
+  if (k === -1) return [(r.bottom - cy) / r.height, (cx - r.left) / r.width];
+  if (k === 1) return [(cy - r.top) / r.height, (r.right - cx) / r.width];
+  return [(cx - r.left) / r.width, (cy - r.top) / r.height];
 };
 
 /* ---------- Sin zoom: pellizco, doble toque, ctrl+rueda, ctrl+/- ---------- */

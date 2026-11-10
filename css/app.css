@@ -176,3 +176,19 @@ details .in{padding:0 0 12px}
 
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 @media (min-width:561px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+
+/* plantas por empresa */
+.plg{margin:16px 0 0;color:var(--mut);font:700 15px/1.2 var(--cond)}
+.pl{padding:10px 0;border-bottom:1px solid var(--line)}
+.pl b{display:block;font-weight:650}
+.pl .u{display:block;font-size:13px;color:var(--t1200);line-height:1.3}
+.pl p{margin:4px 0 0;font-size:14.5px;line-height:1.42;color:var(--tx)}
+
+/* Sin modo horizontal: si el teléfono se acuesta, la app se contragira y sigue en vertical.
+   core.js mide la pantalla y pone --pw / --ph (ancho y alto en vertical). */
+html.rot #app{right:auto;bottom:auto;width:var(--pw);height:var(--ph);max-width:none;margin:0;border:0;transform-origin:0 0}
+html.rot-l #app{transform:translateY(var(--pw)) rotate(-90deg)}
+html.rot-r #app{transform:translateX(var(--ph)) rotate(90deg)}
+html.rot-l{--sat:env(safe-area-inset-left,0px);--sab:14px}
+html.rot-r{--sat:env(safe-area-inset-right,0px);--sab:14px}
+html.rot,html.rot body{height:100%;min-height:0}

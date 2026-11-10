@@ -44,7 +44,7 @@
     S.normas.forEach(function (n) { if (hit(n.org + ' ' + n.cod + ' ' + n.t + ' ' + n.usos + ' ' + (n.eq || '') + ' ' + n.gr.map(function (g) { return g[0]; }).join(' '))) out.push(['#/normas/' + n.id, n.org + ' ' + n.cod, n.t, 'Norma']); });
     S.grados.forEach(function (g) { if (hit(g.n + ' ' + g.std + ' ' + g.fam + ' ' + g.u)) out.push(['#/quimica/grados/' + g.id, g.n, g.fam, 'Grado']); });
     S.elementos.forEach(function (e) { if (hit(e.n + ' ' + e.res) || S.norm(e.s) === t) out.push(['#/quimica/elementos/' + e.s, e.n + ' (' + e.s + ')', e.res, 'Elemento']); });
-    S.empresas.forEach(function (e) { if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' '))) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
+    S.empresas.forEach(function (e) { var pl = (S.plantas && S.plantas[e.id] || []).map(function (p) { return typeof p === 'string' ? p : p.join(' '); }).join(' '); if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' ') + ' ' + pl)) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
     S.glosario.forEach(function (g) { if (hit(g[0] + ' ' + g[1])) out.push(['#/inicio/glosario', g[0], g[1], 'Glosario']); });
     return out.slice(0, 40);
   };
@@ -54,7 +54,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.1.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.2.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -223,6 +223,14 @@
       }).join('') + '</table><p class="small">Fuente: World Steel Association, World Steel in Figures 2026. Nippon Steel consolida a U.S. Steel desde junio de 2025.</p>';
     return { title: 'Ranking mundial 2025', html: h };
   }
+  function plantas(id) {
+    var ps = S.plantas && S.plantas[id]; if (!ps) return '';
+    var n = ps.filter(function (p) { return typeof p !== 'string'; }).length;
+    return '<h3>Plantas y qué hace cada una</h3>' + ps.map(function (p) {
+      if (typeof p === 'string') return '<h4 class="plg">' + p + '</h4>';
+      return '<div class="pl"><b>' + p[0] + '</b><span class="u">' + p[1] + '</span><p>' + p[2] + '</p></div>';
+    }).join('') + '<p class="small" style="margin-top:8px">' + n + ' sitios principales; la lista no es exhaustiva.</p>';
+  }
   function empresa(e) {
     var kv = [];
     if (e.pais) kv.push(['Países', e.pais]);
@@ -231,7 +239,7 @@
     if (e.prod) kv.push(['Acero crudo 2025', e.prod]);
     if (e.ruta) kv.push(['Ruta de producción', e.ruta]);
     var h = '<h2>' + e.n + '</h2><p class="lead">' + e.res + '</p>' + (kv.length ? S.kv(kv) : '') +
-      sec('Historia', e.hist) + sec('Líderes', e.lid) + sec('Accionistas', e.acc) + sec(e.reg === 'ca' || e.id === 'otros-mx' ? 'Quiénes son' : 'Especialización', e.esp) + sec('Hoy', e.hoy) +
+      plantas(e.id) + sec('Historia', e.hist) + sec('Líderes', e.lid) + sec('Accionistas', e.acc) + sec(e.reg === 'ca' || e.id === 'otros-mx' ? 'Quiénes son' : 'Especialización', e.esp) + sec('Hoy', e.hoy) +
       '<p class="small" style="margin-top:16px">Datos a ' + S.ind.corte + '.</p>';
     return { title: e.n, html: h };
   }
