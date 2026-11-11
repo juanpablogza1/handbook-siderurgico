@@ -56,7 +56,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.8.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.9.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.', 'El mapa ubica una selección de acerías y minas de hierro de forma aproximada, con capacidades nominales. Base cartográfica: Natural Earth.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -321,6 +321,18 @@
     }).join('');
     return { n: n, html: h + '<p class="small" style="margin:12px 0 4px">' + c.nota + '</p>' };
   }
+  function organigrama(id) {
+    var o = S.org && S.org[id]; if (!o) return '';
+    function nodo(x, j) {
+      var tag = x[4] ? 'a' : 'div';
+      return '<' + tag + ' class="og-n ' + x[0] + (j ? ' j' : '') + '"' + (x[4] ? ' href="#/industria/' + x[4] + '"' : '') + '><small>' + x[1] + '</small><b>' + x[2] + '</b>' + (x[3] ? '<i>' + x[3] + '</i>' : '') + '</' + tag + '>';
+    }
+    var top = o.n.filter(function (x) { return x[0] !== 'r'; }), rep = o.n.filter(function (x) { return x[0] === 'r'; });
+    var h = '<div class="og">' + top.map(function (x, i) { return nodo(x, i > 0); }).join('');
+    if (rep.length === 1) h += nodo(rep[0], true);
+    else if (rep.length) h += '<div class="og-g">' + rep.map(function (x) { return nodo(x, false); }).join('') + '</div>';
+    return h + '</div><p class="small og-x">' + (o.x ? o.x + ' ' : '') + 'Primer nivel a ' + S.orgCorte + '; los cargos cambian.</p>';
+  }
   function empresa(e) {
     var r = (S.resumen && S.resumen[e.id]) || [], pl = plantas(e.id), cli = clientes(e.id);
     var nAc = (S.acerias || []).filter(function (a) { return a[7] === e.id; }).length;
@@ -331,6 +343,7 @@
     if (cli) secs.push(['Principales clientes', cli.n || '', cli.html]);
     if (e.hist.length) secs.push(['Historia', e.hist.length, linea(e.hist)]);
     if (e.lid.length || e.acc.length) secs.push(['Líderes y accionistas', '', (e.lid.length ? '<h4 class="plg" style="margin-top:2px">Quién dirige</h4>' + S.ul(e.lid) : '') + (e.acc.length ? '<h4 class="plg">Quién es dueño</h4>' + S.ul(e.acc) : '')]);
+    var og = organigrama(e.id); if (og) secs.push(['Organigrama', '', og]);
     if (e.esp.length) secs.push([e.reg === 'ca' || e.id === 'otros-mx' ? 'Quiénes son' : 'Especialización', e.esp.length, S.ul(e.esp)]);
     if (e.hoy.length) secs.push(['Hoy', '', S.ul(e.hoy)]);
     var h = '<div class="eh"><h2>' + e.n + '</h2>' + S.logo(e.id, 'emp') + '</div><p class="lead" style="margin-bottom:10px">' + e.res + '</p>' + (tiles ? '<div class="tiles">' + tiles + '</div>' : '') +

@@ -22,7 +22,7 @@ S.ind = {
     ['Sección 232', 'Estados Unidos impuso 25 % al acero en 2018. En 2025 retiró las exenciones, incluida la de México, y subió el arancel a 50 %. El acero es tema central de la revisión del T-MEC.'],
     ['Descarbonización', 'El acero genera cerca del 7–9 % del CO₂ mundial. Las rutas: más chatarra y horno eléctrico, reducción directa con gas e hidrógeno, y captura de carbono.'],
     ['CBAM europeo', 'Desde 2026 la Unión Europea cobra el carbono incorporado en el acero importado.'],
-    ['Consolidación', 'Nippon Steel compró U.S. Steel (2025); Cleveland-Cliffs integró AK Steel, ArcelorMittal USA y Stelco; thyssenkrupp negocia la venta de su acero a Jindal Steel International.'],
+    ['Consolidación', 'Nippon Steel compró U.S. Steel (2025); Cleveland-Cliffs integró AK Steel, ArcelorMittal USA y Stelco; thyssenkrupp no cerró la venta de su acero a Jindal (mayo de 2026) y prepara su escisión.'],
     ['Nearshoring', 'La relocalización de manufactura eleva la demanda de lámina automotriz y de línea blanca en el norte de México.'],
     ['Precios de referencia', 'Rollo caliente (HRC) según CRU o Platts; mineral 62 % Fe CFR China; chatarra HMS y busheling; coque y gas natural.']
   ],
@@ -54,7 +54,7 @@ S.ranking = [
   E({ id: 'techint', n: 'Grupo Techint', reg: 'mx', pais: 'Argentina e Italia', sede: 'Buenos Aires y Milán; tenedora San Faustin en Luxemburgo', fund: '1945', prod: '16.3 Mt (lugar 24 mundial)', ruta: 'Grupo industrial',
     res: 'Grupo familiar ítalo-argentino dueño de Ternium y Tenaris.',
     hist: ['1945: Agostino Rocca funda en Milán la Compagnia Tecnica Internazionale y al año siguiente se establece en Argentina.', '1954: inicia Siderca en Campana, tubería sin costura.', '1992–1998: gana las privatizaciones de Somisa (Argentina), TAMSA (México) y Sidor (Venezuela); compra Dalmine (Italia).', '2002: agrupa su tubería en Tenaris. 2005: agrupa sus planos y largos en Ternium.'],
-    lid: ['Paolo Rocca, nieto del fundador: presidente y CEO de Tenaris y presidente del consejo de Ternium.'],
+    lid: ['Paolo Rocca, nieto del fundador: preside el grupo y los consejos de Tenaris y Ternium.'],
     acc: ['San Faustin S.A., controlada por la fundación Rocca & Partners. No cotiza en bolsa.'],
     esp: ['Ternium: aceros planos y largos.', 'Tenaris: tubería para energía.', 'Tenova: tecnología siderúrgica, incluido el proceso de reducción directa HYL/Energiron.', 'Techint Ingeniería y Construcción, Tecpetrol (petróleo y gas) y Humanitas (hospitales).'],
     hoy: ['Cultura de carrera interna larga: sus directivos suelen entrar como jóvenes profesionales.'] });
@@ -62,7 +62,7 @@ S.ranking = [
   E({ id: 'tenaris', n: 'Tenaris (TAMSA)', reg: 'mx', pais: 'México, Argentina, Italia, Estados Unidos', sede: 'Luxemburgo; en México, Veracruz', fund: '2002 (TAMSA: 1952)', prod: 'Incluida en Grupo Techint', ruta: 'Horno eléctrico y laminación de tubo sin costura',
     res: 'Líder mundial en tubería sin costura para petróleo y gas.',
     hist: ['1952: se funda Tubos de Acero de México (TAMSA) en Veracruz.', '1993: Techint toma el control de TAMSA.', '2002: Siderca, TAMSA y Dalmine se fusionan en Tenaris.', '2006–2007: compra Maverick y Hydril (conexiones premium).', '2017: arranca la planta de Bay City, Texas. 2020: compra IPSCO Tubulars.'],
-    lid: ['Paolo Rocca, presidente del consejo y CEO.'],
+    lid: ['Paolo Rocca, presidente del consejo.', 'Gabriel Podskubka, director general (CEO) desde mayo de 2026.'],
     acc: ['San Faustin: ≈ 60 %.', 'Público: Nueva York (TS), Milán y México.'],
     esp: ['OCTG: tubería de revestimiento y producción.', 'Conexiones premium TenarisHydril.', 'Tubería de línea, mecánica y para calderas.', 'Modelo Rig Direct: surte la tubería directo al pozo.'],
     hoy: ['Su ciclo sigue la actividad de perforación en Norteamérica y Medio Oriente.'] });
@@ -94,7 +94,7 @@ S.ranking = [
   E({ id: 'simec', n: 'Grupo Simec', reg: 'mx', pais: 'México, Estados Unidos, Brasil', sede: 'Guadalajara, Jalisco', fund: '', prod: '', ruta: 'Horno eléctrico con chatarra',
     res: 'Especialista en aceros especiales en barra (SBQ).',
     hist: ['2001: Industrias CH toma el control.', '2005: compra Republic Engineered Products en Ohio, hoy Republic Steel.', 'Luego suma plantas en San Luis Potosí, Tlaxcala, Mexicali y Brasil.', '2023: cierra las acerías de Republic Steel en Canton y Lackawanna y traslada esa producción a Tlaxcala.'],
-    lid: ['Rufino Vigil González, presidente del consejo de Industrias CH y de Simec.'],
+    lid: ['Rufino Vigil González, presidente del consejo de Industrias CH y de Simec.', 'Sergio Vigil González, director general desde julio de 2024.'],
     acc: ['Industrias CH, de la familia Vigil. Cotiza en la BMV y en NYSE American.'],
     esp: ['Barras de aceros especiales para autopartes y forja.', 'Varilla, perfiles comerciales y estructurales.'],
     hoy: [] });
@@ -141,13 +141,13 @@ S.ranking = [
   E({ id: 'ansteel', n: 'Ansteel', reg: 'gl', pais: 'China', sede: 'Anshan, Liaoning', fund: '1948 (origen: 1916)', prod: '57.61 Mt', ruta: 'Alto horno y convertidor',
     res: 'La «cuna» de la siderurgia china moderna.',
     hist: ['1916: nace la acería de Anshan bajo administración japonesa.', '1948: se reorganiza como la primera gran siderúrgica de la nueva China.', '2010: absorbe Pangang. 2021: absorbe Benxi Steel.'],
-    lid: ['Directivos designados por el Estado.'], acc: ['Estado chino (SASAC).'],
+    lid: ['Tan Chengxu, presidente del consejo; lo designa el Estado.'], acc: ['Estado chino (SASAC).'],
     esp: ['Rieles, placa naval, lámina automotriz.', 'Vanadio y titanio (Pangang).', 'Minas de hierro propias: una de las más integradas de China.'], hoy: [] });
 
   E({ id: 'hbis', n: 'HBIS', reg: 'gl', pais: 'China', sede: 'Shijiazhuang, Hebei', fund: '2008', prod: '42.49 Mt', ruta: 'Alto horno y convertidor',
     res: 'El campeón de Hebei, la provincia que más acero produce.',
     hist: ['2008: fusión de Tangsteel y Hansteel.', '2016: compra la acería de Smederevo, Serbia.'],
-    lid: ['Directivos designados por el gobierno provincial.'], acc: ['Gobierno de la provincia de Hebei.'],
+    lid: ['Liu Jian, presidente del consejo; lo designa el gobierno provincial.'], acc: ['Gobierno de la provincia de Hebei.'],
     esp: ['Lámina y placa para construcción, automotriz y línea blanca.', 'Planta de reducción directa con gas rico en hidrógeno, con tecnología Energiron.'], hoy: [] });
 
   E({ id: 'posco', n: 'POSCO', reg: 'gl', pais: 'Corea del Sur', sede: 'Seúl y Pohang', fund: '1968', prod: '37.36 Mt', ruta: 'Alto horno y convertidor; proceso FINEX',
@@ -168,14 +168,14 @@ S.ranking = [
   E({ id: 'jsw', n: 'JSW Steel', reg: 'gl', pais: 'India', sede: 'Bombay', fund: '1982', prod: '30.28 Mt', ruta: 'Alto horno y convertidor; proceso Corex',
     res: 'El de mayor crecimiento entre los grandes.',
     hist: ['1982: inicia con una planta relaminadora del grupo O. P. Jindal.', '1994 en adelante: construye Vijayanagar, hoy la mayor acería de India en un solo sitio.', 'Compra activos en Estados Unidos (Texas, Ohio) e Italia.'],
-    lid: ['Sajjan Jindal, presidente del consejo.', 'Jayant Acharya, CEO.'],
+    lid: ['Sajjan Jindal, presidente del consejo y director general.', 'Jayant Acharya, director general adjunto y CEO desde 2023.'],
     acc: ['Familia Jindal (grupo promotor): alrededor de 45 %.', 'JFE Steel: cerca de 15 %.'],
     esp: ['Planos recubiertos y prepintados, largos.', 'Los cuatro hermanos Jindal dirigen grupos separados: JSW, Jindal Steel, Jindal SAW y Jindal Stainless.'], hoy: [] });
 
   E({ id: 'jfe', n: 'JFE Steel', reg: 'gl', pais: 'Japón', sede: 'Tokio', fund: '2002', prod: '22.69 Mt', ruta: 'Alto horno y convertidor',
     res: 'Segundo acerero japonés.',
     hist: ['2002: fusión de NKK y Kawasaki Steel.', '2023: apaga el alto horno de Keihin y concentra producción en el oeste de Japón.'],
-    lid: [], acc: ['JFE Holdings, de capital disperso en Tokio.'],
+    lid: ['Yoshihisa Kitano, presidente y CEO de JFE Holdings.', 'Masayuki Hirose, presidente y CEO de JFE Steel.'], acc: ['JFE Holdings, de capital disperso en Tokio.'],
     esp: ['Lámina automotriz, placa, tubería.', 'Socio de Nucor en galvanizado en Silao y accionista de JSW Steel.'], hoy: [] });
 
   E({ id: 'nucor', n: 'Nucor', reg: 'gl', pais: 'Estados Unidos', sede: 'Charlotte, Carolina del Norte', fund: '1905 (acerera desde 1969)', prod: '22.33 Mt', ruta: 'Horno eléctrico con chatarra y hierro esponja',
@@ -203,15 +203,15 @@ S.ranking = [
   E({ id: 'gerdau', n: 'Gerdau', reg: 'gl', pais: 'Brasil', sede: 'São Paulo', fund: '1901', prod: '13.03 Mt', ruta: 'Horno eléctrico con chatarra; integrada en Ouro Branco',
     res: 'El mayor productor de aceros largos de América.',
     hist: ['1901: João Gerdau compra una fábrica de clavos en Porto Alegre.', '1948: entra a la siderurgia con la Riograndense.', '1989–2007: se expande a Canadá y Estados Unidos (Ameristeel, Chaparral).', '2007: llega a México; después forma Gerdau Corsa.', '2018: Gustavo Werneck es el primer CEO ajeno a la familia.'],
-    lid: ['Gustavo Werneck, CEO desde 2018.', 'La familia Gerdau Johannpeter preside el consejo.'],
+    lid: ['Gustavo Werneck, CEO desde 2018.', 'André Bier Gerdau Johannpeter, presidente del consejo desde abril de 2025.'],
     acc: ['Metalúrgica Gerdau, controlada por la familia Gerdau Johannpeter. Cotiza en São Paulo y Nueva York.'],
     esp: ['Varilla, perfiles, alambrón.', 'Aceros especiales para la industria automotriz.', 'Mayor reciclador de chatarra de América Latina.'],
     hoy: ['Desplaza inversión de Brasil hacia Estados Unidos ante la presión de importaciones.'] });
 
   E({ id: 'thyssenkrupp', n: 'thyssenkrupp Steel', reg: 'gl', pais: 'Alemania', sede: 'Duisburgo', fund: '1999 (Krupp: 1811; Thyssen: 1891)', prod: '9.41 Mt', ruta: 'Alto horno y convertidor; reducción directa en construcción',
-    res: 'El mayor acerero alemán, en venta y reestructura.',
-    hist: ['1811: Friedrich Krupp funda su fábrica en Essen. 1891: August Thyssen inicia en Duisburgo.', '1999: fusión Thyssen-Krupp.', '2019: Bruselas veta la fusión con Tata Steel Europe.', 'Septiembre de 2025: Jindal Steel International, del grupo de Naveen Jindal, presenta oferta por la división de acero.', '2026: las partes negocian una venta por etapas; los pasivos de pensiones son el principal obstáculo.'],
-    lid: ['Miguel López, CEO de thyssenkrupp AG, el corporativo vendedor.'],
+    res: 'El mayor acerero alemán, en reestructura y camino a una escisión.',
+    hist: ['1811: Friedrich Krupp funda su fábrica en Essen. 1891: August Thyssen inicia en Duisburgo.', '1999: fusión Thyssen-Krupp.', '2019: Bruselas veta la fusión con Tata Steel Europe.', 'Septiembre de 2025: Jindal Steel International, del grupo de Naveen Jindal, presenta oferta por la división de acero.', 'Mayo de 2026: fracasan las negociaciones con Jindal. El corporativo impulsa la escisión de la división con salida a bolsa.'],
+    lid: ['Marie Jaroni, CEO de thyssenkrupp Steel desde noviembre de 2025.', 'Miguel López, CEO de thyssenkrupp AG, el corporativo dueño.'],
     acc: ['thyssenkrupp AG.'],
     esp: ['Lámina automotriz, hojalata (Rasselstein), acero eléctrico.', 'Proyecto de reducción directa con hidrógeno en Duisburgo.'],
     hoy: ['Plan de recorte de capacidad y de miles de empleos.'] });
@@ -219,7 +219,7 @@ S.ranking = [
   E({ id: 'ssab', n: 'SSAB', reg: 'gl', pais: 'Suecia', sede: 'Estocolmo', fund: '1978', prod: '', ruta: 'Integrada en transición a horno eléctrico',
     res: 'Pionero del acero sin combustibles fósiles.',
     hist: ['1978: el Estado sueco fusiona tres acerías.', '2014: compra la finlandesa Rautaruukki.', '2016: lanza HYBRIT con la minera LKAB y la eléctrica Vattenfall.', '2021: entrega el primer acero hecho con hierro reducido con hidrógeno.'],
-    lid: [], acc: ['La minera estatal sueca LKAB y el Estado finlandés (Solidium) son los mayores accionistas.'],
+    lid: ['Lennart Evrell, presidente del consejo.', 'Johnny Sjöström, presidente y CEO.'], acc: ['La minera estatal sueca LKAB y el Estado finlandés (Solidium) son los mayores accionistas.'],
     esp: ['Placa antidesgaste Hardox y estructural de ultra alta resistencia Strenx.', 'Mini-acerías de placa en Alabama y Iowa.'], hoy: [] });
 
   /* ---- Resto del ranking mundial ---- */
