@@ -53,7 +53,7 @@ S.plantas = {
   deacero: [
     ['Acería Celaya', 'Villagrán, Guanajuato', 'Acería eléctrica y laminación: 2.9 Mt de acero líquido. Varilla, alambrón y barras. Opera desde 1998 y es la mayor del grupo.'],
     ['Acería Saltillo', 'Saltillo, Coahuila', 'La primera miniacería del grupo (1985). Alambrón y varilla.'],
-    ['Acería Ramos Arizpe', 'Ramos Arizpe, Coahuila', 'Perfiles comerciales y estructurales desde 2013. En construcción Ramos II: nueva acería y tren para perfiles de hasta 27 pulgadas.'],
+    ['Acería Ramos Arizpe', 'Ramos Arizpe, Coahuila', 'Acería eléctrica y laminación de perfiles comerciales y estructurales desde 2013. En construcción Ramos II: nueva acería y tren para perfiles de hasta 27 pulgadas.'],
     ['Plantas de alambres', 'Guadalupe (N. L.), Celaya, Morelia, Querétaro, Mexicali y otras', 'Trefilado, galvanizado de alambre, malla, clavo, cercas, cable y alambres industriales.'],
     ['Estados Unidos', 'Dos plantas', 'Clavo para pistola, cable y malla.'],
     ['Patios de reciclaje', 'Más de 20 en México', 'Acopio y procesamiento de chatarra para las tres acerías.']
@@ -247,4 +247,31 @@ S.plantas = {
     ['Raahe y Hämeenlinna', 'Finlandia', 'Integrada en Raahe; frío y recubiertos en Hämeenlinna.'],
     ['Mobile y Montpelier', 'Alabama e Iowa, Estados Unidos', 'Miniacerías de placa con horno eléctrico.']
   ]
+};
+
+/* Resumen corto por empresa para la primera pantalla: [sede, fundada, acero crudo 2025, ruta, dirige, controla] */
+S.resumen = {
+  ternium: ['Monterrey, N. L. (operación)', '2005; Hylsa, 1942', 'Dentro de las 16.3 Mt de Techint', 'HRD + horno eléctrico; alto horno', 'Máximo Vedoya, CEO', 'Techint 65 %, Tenaris 11 %'],
+  techint: ['Buenos Aires y Milán', '1945', '16.3 Mt, lugar 24', 'Grupo: Ternium y Tenaris', 'Paolo Rocca', 'Familia Rocca (San Faustin)'],
+  tenaris: ['Luxemburgo; Veracruz', '2002; TAMSA, 1952', 'Dentro de Techint', 'Horno eléctrico; tubo sin costura', 'Paolo Rocca, CEO', 'San Faustin ≈ 60 %'],
+  'am-mexico': ['Lázaro Cárdenas, Mich.', '1992; Sicartsa, 1976', 'La mayor planta del país', 'Alto horno; HRD + horno eléctrico', 'Reporta a ArcelorMittal', 'ArcelorMittal 100 %'],
+  deacero: ['Monterrey, N. L.', '1952', '≈ 4.5 Mt de capacidad', 'Horno eléctrico, 100 % chatarra', 'Raúl Gutiérrez Muguerza', 'Familia Gutiérrez'],
+  ahmsa: ['Monclova, Coah.', '1942', 'Parada desde 2023', 'Alto horno y convertidor', 'Síndico de la quiebra', 'En liquidación judicial'],
+  simec: ['Guadalajara, Jal.', 'Control de ICH desde 2001', '2.6 Mt de capacidad en México', 'Horno eléctrico con chatarra', 'Rufino Vigil González', 'Industrias CH (familia Vigil)'],
+  baowu: ['Shanghái', '2016; Baosteel, 1978', '124.76 Mt, lugar 1', 'Alto horno y convertidor', 'Hu Wangming', 'Estado chino'],
+  arcelormittal: ['Luxemburgo', '2006', '63.43 Mt, lugar 2', 'Integrada y horno eléctrico', 'Aditya Mittal, CEO', 'Familia Mittal ≈ 40 %'],
+  nippon: ['Tokio', '1970; Yawata, 1901', '57.78 Mt, lugar 3', 'Alto horno; eléctricos en EE. UU.', 'Eiji Hashimoto, CEO', 'Capital disperso (Tokio)'],
+  ussteel: ['Pittsburgh', '1901', 'Consolidada en Nippon Steel', 'Integrada y miniacerías', 'David Burritt, CEO', 'Nippon Steel 100 %'],
+  ansteel: ['Anshan, Liaoning', '1948; origen en 1916', '57.61 Mt, lugar 4', 'Alto horno y convertidor', 'Designados por el Estado', 'Estado chino'],
+  hbis: ['Shijiazhuang, Hebei', '2008', '42.49 Mt, lugar 5', 'Alto horno y convertidor', 'Designados por la provincia', 'Provincia de Hebei'],
+  posco: ['Seúl y Pohang', '1968', '37.36 Mt, lugar 8', 'Alto horno; FINEX', 'Chang In-hwa', 'Disperso; fondo de pensiones'],
+  tata: ['Bombay', '1907', '30.46 Mt, lugar 10', 'Alto horno y convertidor', 'T. V. Narendran, CEO', 'Tata Sons ≈ un tercio'],
+  jsw: ['Bombay', '1982', '30.28 Mt, lugar 11', 'Alto horno; Corex', 'Sajjan Jindal', 'Familia Jindal ≈ 45 %; JFE 15 %'],
+  jfe: ['Tokio', '2002', '22.69 Mt, lugar 14', 'Alto horno y convertidor', '', 'JFE Holdings'],
+  nucor: ['Charlotte, N. C.', '1905; acero desde 1969', '22.33 Mt, lugar 16', 'Horno eléctrico', 'Leon Topalian, CEO', 'Capital disperso (NYSE)'],
+  cliffs: ['Cleveland, Ohio', '1847', '17.06 Mt, lugar 22', 'Integrada, con minas propias', 'Lourenco Goncalves, CEO', 'Capital disperso (NYSE)'],
+  sdi: ['Fort Wayne, Indiana', '1993', '10.70 Mt, lugar 40', 'Horno eléctrico', 'Mark Millett; Wagler en 2027', 'Capital disperso (NASDAQ)'],
+  gerdau: ['São Paulo', '1901', '13.03 Mt, lugar 31', 'Horno eléctrico; una integrada', 'Gustavo Werneck, CEO', 'Familia Gerdau Johannpeter'],
+  thyssenkrupp: ['Duisburgo', '1999; Krupp, 1811', '9.41 Mt, lugar 47', 'Alto horno y convertidor', 'Miguel López (corporativo)', 'thyssenkrupp AG; en venta'],
+  ssab: ['Estocolmo', '1978', '', 'Integrada, hacia horno eléctrico', '', 'LKAB y Estado finlandés']
 };

@@ -177,12 +177,34 @@ details .in{padding:0 0 12px}
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
 @media (min-width:561px){#app{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 
-/* plantas por empresa */
-.plg{margin:16px 0 0;color:var(--mut);font:700 15px/1.2 var(--cond)}
-.pl{padding:10px 0;border-bottom:1px solid var(--line)}
-.pl b{display:block;font-weight:650}
-.pl .u{display:block;font-size:13px;color:var(--t1200);line-height:1.3}
-.pl p{margin:4px 0 0;font-size:14.5px;line-height:1.42;color:var(--tx)}
+/* ficha de empresa: resumen en mosaico + secciones desplegables */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 4px}
+.tiles div{background:var(--s1);border-radius:10px;padding:8px 11px 9px;min-width:0}
+.tiles b{display:block;font:600 12px/1.2 var(--body);color:var(--mut);margin-bottom:3px}
+.tiles span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font:650 14.5px/1.28 var(--body)}
+.accs{margin:12px -16px 0;border-top:1px solid var(--line)}
+details.acc{border-bottom:1px solid var(--line);padding:0 16px}
+details.acc>summary{padding:13px 0;font:700 17.5px/1.2 var(--cond);scroll-margin-top:8px}
+details.acc[open]>summary{color:var(--t1200)}
+details summary .st{flex:1;min-width:0}
+details summary .ct{font:700 12.5px/1 var(--body);color:var(--mut);background:var(--s2);border-radius:10px;padding:4px 8px;margin-left:10px}
+details.acc>.in{padding:0 0 14px}
+details.sub{border:0;background:var(--s1);border-radius:12px;margin:0 0 10px;padding:0 12px}
+details.sub>summary{padding:12px 0;font:700 15.5px/1.2 var(--body)}
+details.sub>.in{padding:0 0 4px}
+.pl{padding:12px 0 13px;border-top:1px solid var(--line)}
+details.acc>.in>.pl:first-child{border-top:0;padding-top:2px}
+.pl b{display:block;font:700 16px/1.25 var(--body)}
+.pl .u{display:block;margin-top:2px;font:500 13px/1.3 var(--body);color:var(--t1200)}
+.pl p{margin:7px 0 0;font-size:14.5px;line-height:1.45;color:#cdd6dc}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0 0}
+.tags i{font:600 11.5px/1 var(--body);font-style:normal;padding:4px 8px;border-radius:10px;background:var(--s2);color:var(--tx);white-space:nowrap}
+.tags i.off{background:#4a2a26;color:#ffb4a8}
+.tags i.obra{background:#4a3d1c;color:#ffd98a}
+.tl{display:grid;grid-template-columns:78px 1fr;gap:12px;padding:9px 0;border-top:1px solid var(--line);font-size:14.5px;line-height:1.42}
+.tl:first-child{border-top:0;padding-top:2px}
+.tl b{font:700 13.5px/1.35 var(--body);color:var(--t1200)}
+.tl.one{grid-template-columns:1fr}
 
 /* Sin modo horizontal: si el teléfono se acuesta, la app se contragira y sigue en vertical.
    core.js mide la pantalla y pone --pw / --ph (ancho y alto en vertical). */

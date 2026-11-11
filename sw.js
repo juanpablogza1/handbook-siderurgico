@@ -1,6 +1,6 @@
 /* Service worker: guarda toda la app para uso sin conexión.
    Sube VERSION en cada publicación para que los teléfonos descarguen el contenido nuevo. */
-var VERSION = 'siderurgica-v1.2.0';
+var VERSION = 'siderurgica-v1.3.0';
 var ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/core.js', 'js/anim-lib.js', 'js/anim-1.js', 'js/anim-2.js', 'js/anim-3.js',
@@ -10,7 +10,7 @@ var ASSETS = [
 ];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ASSETS); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(ASSETS.map(function (u) { return new Request(u, { cache: 'reload' }); })); }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener('activate', function (e) {
@@ -23,7 +23,7 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request).then(function (res) {
+    fetch(e.request.url, { cache: 'no-cache', credentials: 'same-origin' }).then(function (res) {
       if (res && res.ok) { var copy = res.clone(); caches.open(VERSION).then(function (c) { c.put(e.request, copy); }); }
       return res;
     }).catch(function () {

@@ -54,7 +54,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.2.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.3.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -223,24 +223,74 @@
       }).join('') + '</table><p class="small">Fuente: World Steel Association, World Steel in Figures 2026. Nippon Steel consolida a U.S. Steel desde junio de 2025.</p>';
     return { title: 'Ranking mundial 2025', html: h };
   }
+  /* Etiquetas de proceso deducidas de la descripción de cada planta, en orden de flujo.
+     Las frases sobre lo que está parado, en obra o en reconversión no generan etiquetas de proceso. */
+  var TAGS = [[/(^|[^a-záéíóúñ])minas?(?![a-záéíóúñ])|miner[ií]a/i, 'Minería'], [/pélet|peletizadora/i, 'Pélet'], [/coquer[ií]a/i, 'Coque'], [/reducci[oó]n directa|hierro esponja|\bHBI\b/i, 'Reducción directa'],
+    [/integradas?|altos? hornos?/i, 'Integrada'], [/acer[ií]as? el[eé]ctricas?|hornos? el[eé]ctricos?|miniacer[ií]as?/i, 'Horno eléctrico'],
+    [/en caliente|rollo caliente/i, 'Laminación en caliente'], [/(?<!acabado )en fr[ií]o|(^|[\s:])fr[ií]o y/i, 'Laminación en frío'], [/acabado en fr[ií]o/i, 'Acabado en frío'], [/galvan/i, 'Galvanizado'], [/pintado|prepintado/i, 'Pintado'], [/hojalata|esta[ñn]ado/i, 'Hojalata'],
+    [/acero el[eé]ctrico|silicio|grano orientado/i, 'Acero eléctrico'], [/inoxidable/i, 'Inoxidable'], [/\bplaca\b/i, 'Placa'], [/\btub(o|os|er[ií]a)\b/i, 'Tubería'], [/\bplanos\b/i, 'Planos'],
+    [/varilla|alambr[oó]n|\blargos\b|\bbarras?\b|vigas|rieles|perfiles (estructurales|comerciales|pesados|especiales|H\b)/i, 'Largos'], [/\balambres?\b|trefilado|malla|clavo/i, 'Alambre'],
+    [/chatarra|reciclaje/i, 'Chatarra'], [/centros? de servicio|corte (longitudinal|a medida)/i, 'Centro de servicio']];
+  var NOPROC = /parad[ao]s?\b|cerrad[ao]s?\b|apag|sin alto horno|se sustituye|en construcci[oó]n|conversi[oó]n|transici[oó]n/i;
+  function tags(txt) {
+    var cl = txt.split(/[.;]\s+(?=[A-ZÁÉÍÓÚ])|;\s*/), live = [], out = [], obra = false, off = false;
+    cl.forEach(function (c) {
+      if (!NOPROC.test(c)) { live.push(c); return; }
+      if (/en construcci[oó]n|conversi[oó]n|transici[oó]n|se sustituye/i.test(c)) obra = true;
+      if (/(^|\s)(parad[ao]s?|cerrad[ao]s?) (desde|entre|en)\b/i.test(c) && !/área/i.test(c)) off = true;
+    });
+    var t = live.join('. ');
+    var fb = [[/laminaci[oó]n|laminador/i, 'Laminación'], [/l[aá]mina|rollo/i, 'Planos'], [/recubiert/i, 'Recubiertos'], [/estructuras|edificios/i, 'Estructuras']];
+    TAGS.forEach(function (x) { if (out.length < 5 && x[0].test(t)) out.push('<i>' + x[1] + '</i>'); });
+    fb.forEach(function (x) { if (!out.length && x[0].test(t)) out.push('<i>' + x[1] + '</i>'); });
+    if (obra) out.push('<i class="obra">En obra o reconversión</i>');
+    if (off) out.push('<i class="off">Parada</i>');
+    return out.length ? '<div class="tags">' + out.join('') + '</div>' : '';
+  }
+  function planta(p) { return '<div class="pl"><b>' + p[0] + '</b><span class="u">' + p[1] + '</span>' + tags(p[0] + '. ' + p[2]) + '<p>' + p[2] + '</p></div>'; }
   function plantas(id) {
-    var ps = S.plantas && S.plantas[id]; if (!ps) return '';
-    var n = ps.filter(function (p) { return typeof p !== 'string'; }).length;
-    return '<h3>Plantas y qué hace cada una</h3>' + ps.map(function (p) {
-      if (typeof p === 'string') return '<h4 class="plg">' + p + '</h4>';
-      return '<div class="pl"><b>' + p[0] + '</b><span class="u">' + p[1] + '</span><p>' + p[2] + '</p></div>';
-    }).join('') + '<p class="small" style="margin-top:8px">' + n + ' sitios principales; la lista no es exhaustiva.</p>';
+    var ps = S.plantas && S.plantas[id]; if (!ps) return null;
+    var groups = [], cur = null, n = 0;
+    ps.forEach(function (p) {
+      if (typeof p === 'string') { cur = { t: p, it: [] }; groups.push(cur); return; }
+      if (!cur) { cur = { t: '', it: [] }; groups.push(cur); }
+      cur.it.push(p); n++;
+    });
+    var h = groups.length === 1 && !groups[0].t
+      ? groups[0].it.map(planta).join('')
+      : groups.map(function (g, k) { return '<details class="sub"' + (k === 0 ? ' open' : '') + '><summary><span class="st">' + g.t + '</span><span class="ct">' + g.it.length + '</span></summary><div class="in">' + g.it.map(planta).join('') + '</div></details>'; }).join('');
+    return { n: n, html: h + '<p class="small" style="margin:10px 0 4px">Sitios principales; la lista no es exhaustiva.</p>' };
+  }
+  function linea(items) {
+    return items.map(function (x) {
+      var m = /^([^:]{2,30}):\s+([\s\S]+)$/.exec(x);
+      return m ? '<div class="tl"><b>' + m[1] + '</b><span>' + m[2].charAt(0).toUpperCase() + m[2].slice(1) + '</span></div>' : '<div class="tl one"><span>' + x + '</span></div>';
+    }).join('');
+  }
+  function acc(t, count, body, open) {
+    return '<details class="acc"' + (open ? ' open' : '') + '><summary><span class="st">' + t + '</span>' + (count ? '<span class="ct">' + count + '</span>' : '') + '</summary><div class="in">' + body + '</div></details>';
   }
   function empresa(e) {
-    var kv = [];
-    if (e.pais) kv.push(['Países', e.pais]);
-    if (e.sede) kv.push(['Sede', e.sede]);
-    if (e.fund) kv.push(['Fundación', e.fund]);
-    if (e.prod) kv.push(['Acero crudo 2025', e.prod]);
-    if (e.ruta) kv.push(['Ruta de producción', e.ruta]);
-    var h = '<h2>' + e.n + '</h2><p class="lead">' + e.res + '</p>' + (kv.length ? S.kv(kv) : '') +
-      plantas(e.id) + sec('Historia', e.hist) + sec('Líderes', e.lid) + sec('Accionistas', e.acc) + sec(e.reg === 'ca' || e.id === 'otros-mx' ? 'Quiénes son' : 'Especialización', e.esp) + sec('Hoy', e.hoy) +
-      '<p class="small" style="margin-top:16px">Datos a ' + S.ind.corte + '.</p>';
-    return { title: e.n, html: h };
+    var r = (S.resumen && S.resumen[e.id]) || [], pl = plantas(e.id);
+    var lab = ['Sede', 'Fundada', 'Acero crudo 2025', 'Ruta', 'Dirige', 'Controla'];
+    var tiles = lab.map(function (l, i) { return r[i] ? '<div><b>' + l + '</b><span>' + r[i] + '</span></div>' : ''; }).join('');
+    var secs = [];
+    if (pl) secs.push(['Plantas y qué hace cada una', pl.n, pl.html]);
+    if (e.hist.length) secs.push(['Historia', e.hist.length, linea(e.hist)]);
+    if (e.lid.length) secs.push(['Líderes', '', S.ul(e.lid)]);
+    if (e.acc.length) secs.push(['Accionistas', '', S.ul(e.acc)]);
+    if (e.esp.length) secs.push([e.reg === 'ca' || e.id === 'otros-mx' ? 'Quiénes son' : 'Especialización', e.esp.length, S.ul(e.esp)]);
+    if (e.hoy.length) secs.push(['Hoy', '', S.ul(e.hoy)]);
+    var h = '<h2>' + e.n + '</h2><p class="lead" style="margin-bottom:10px">' + e.res + '</p>' + (tiles ? '<div class="tiles">' + tiles + '</div>' : '') +
+      '<div class="accs">' + secs.map(function (x) { return acc(x[0], x[1], x[2], secs.length === 1); }).join('') + '</div>' +
+      '<p class="small" style="margin-top:14px">Toca una sección para abrirla. Datos a ' + S.ind.corte + '.</p>';
+    return { title: e.n, html: h, after: function (root) {
+      var ds = root.querySelectorAll('details.acc');
+      for (var i = 0; i < ds.length; i++) ds[i].addEventListener('toggle', function () {
+        if (!this.open) return;
+        for (var k = 0; k < ds.length; k++) if (ds[k] !== this) ds[k].open = false;
+        var el = this; setTimeout(function () { try { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (x) {} }, 60);
+      });
+    } };
   }
 })();
