@@ -71,3 +71,25 @@ write('mapa-vias.js', 'mapaVias', lines('ne_10m_railroads.geojson', function (p)
 var road = function (lo, hi) { return function (p) { return !/Ferry/.test(p.type) && p.scalerank >= lo && p.scalerank <= hi; }; };
 write('mapa-caminos.js', 'mapaCaminos', lines('ne_10m_roads.geojson', road(0, 5), TC, 0.05));
 write('mapa-caminos2.js', 'mapaCaminos2', lines('ne_10m_roads.geojson', road(6, 7), TC, 0.05));
+
+/* Silueta mínima del mundo para miniaturas (décimas de grado, misma proyección). */
+(function () {
+  var t110 = require('world-atlas/land-110m.json'), d = '';
+  tj.feature(t110, t110.objects.land).features.forEach(function (f) {
+    var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
+    polys.forEach(function (p) {
+      var r = p[0], minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
+      r.forEach(function (c) { minx = Math.min(minx, c[0]); maxx = Math.max(maxx, c[0]); miny = Math.min(miny, c[1]); maxy = Math.max(maxy, c[1]); });
+      if (maxy < -60 || (maxx - minx) * (maxy - miny) < 12 || maxx - minx > 300) return;
+      var s = dp(r, 0.7), px = 0, py = 0, o = '';
+      if (s.length < 4) return;
+      s.forEach(function (c, i) {
+        var x = Math.round((c[0] + 180) * 10), y = Math.round(merc(c[1]) / 10);
+        if (i === 0) { o += 'M' + x + ' ' + y; } else { var dx = x - px, dy = y - py; if (!dx && !dy) return; o += 'l' + dx + (dy < 0 ? '' : ' ') + dy; }
+        px = x; py = y;
+      });
+      d += o + 'z';
+    });
+  });
+  write('mapa-mini.js', 'mapaMini', d);
+})();

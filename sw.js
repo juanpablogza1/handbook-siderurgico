@@ -1,10 +1,10 @@
 /* Service worker: guarda toda la app para uso sin conexión.
    Sube VERSION en cada publicación para que los teléfonos descarguen el contenido nuevo. */
-var VERSION = 'siderurgica-v1.6.0';
+var VERSION = 'siderurgica-v1.7.0';
 var ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/core.js', 'js/anim-lib.js', 'js/anim-1.js', 'js/anim-2.js', 'js/anim-3.js',
-  'js/data-procesos.js', 'js/data-quimica.js', 'js/data-grados.js', 'js/data-normas.js', 'js/data-galvanizado.js', 'js/data-industria.js', 'js/data-plantas.js', 'js/data-clientes.js', 'js/data-equipos.js', 'js/data-acerias.js', 'js/mapa.js', 'js/mapa-paises.js', 'js/mapa-vias.js', 'js/mapa-caminos.js', 'js/mapa-caminos2.js', 'js/data-logos.js',
+  'js/data-procesos.js', 'js/data-quimica.js', 'js/data-grados.js', 'js/data-normas.js', 'js/data-galvanizado.js', 'js/data-industria.js', 'js/data-plantas.js', 'js/data-clientes.js', 'js/data-equipos.js', 'js/data-acerias.js', 'js/mapa.js', 'js/mapa-mini.js', 'js/industria.js', 'js/mapa-paises.js', 'js/mapa-vias.js', 'js/mapa-caminos.js', 'js/mapa-caminos2.js', 'js/data-logos.js',
   'js/sim.js', 'js/fec.js', 'js/views.js',
   'icons/favicon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'icons/apple-touch-icon.png'
 ];

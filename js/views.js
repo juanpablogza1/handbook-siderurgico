@@ -56,7 +56,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.6.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.7.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.', 'El mapa ubica una selección de acerías a nivel de ciudad, con capacidades aproximadas. Base cartográfica: Natural Earth.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -243,7 +243,7 @@
       row('#/industria/mapa', 'Mapa de acerías', 'Plantas principales del mundo, con carreteras y vías de ferrocarril', S.acerias.length) + '</ul>' +
       grupo('México y Grupo Techint', 'mx') + grupo('Jugadores globales', 'gl') + grupo('Cadena de suministro', 'ca') +
       '<p class="nota">Datos corporativos a ' + S.ind.corte + '. Producción de acero crudo 2025 según la World Steel Association.</p>';
-    return { title: 'Industria', html: h };
+    return S.industriaHome(h);
   };
   function panorama() {
     var h = '<h3 style="margin-top:6px">El mundo en 2025</h3>' + S.kv(S.ind.mundo) + '<h3>México</h3>' + S.kv(S.ind.mexico) +
