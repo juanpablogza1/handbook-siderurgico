@@ -46,6 +46,7 @@
     S.elementos.forEach(function (e) { if (hit(e.n + ' ' + e.res) || S.norm(e.s) === t) out.push(['#/quimica/elementos/' + e.s, e.n + ' (' + e.s + ')', e.res, 'Elemento']); });
     S.empresas.forEach(function (e) { var pl = (S.plantas && S.plantas[e.id] || []).map(function (p) { return typeof p === 'string' ? p : p.join(' '); }).join(' '); var cs = S.clientes && S.clientes[e.id] ? S.clientes[e.id].seg.map(function (g) { return g[0] + ' ' + g[2].join(' '); }).join(' ') : ''; pl += ' ' + cs; if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' ') + ' ' + pl)) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
     Object.keys(S.fab || {}).forEach(function (id) { var f = S.fab[id]; if (hit(f.join(' '))) out.push(['#/procesos/fabricantes/' + id, f[0], f[1], 'Fabricante']); });
+    if ((S.acerias || []).some(function (a) { return hit(a[0] + ' ' + a[2]); })) out.push(['#/industria/mapa', 'Mapa de acerías', 'Plantas principales del mundo', 'Mapa']);
     S.glosario.forEach(function (g) { if (hit(g[0] + ' ' + g[1])) out.push(['#/inicio/glosario', g[0], g[1], 'Glosario']); });
     return out.slice(0, 40);
   };
@@ -55,8 +56,8 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.5.</p>' +
-      '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.']) +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.6.</p>' +
+      '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.', 'El mapa ubica una selección de acerías a nivel de ciudad, con capacidades aproximadas. Base cartográfica: Natural Earth.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
   }
@@ -228,6 +229,8 @@
 
   /* ================= Industria ================= */
   V.industria = function (p) {
+    if (p[0] === 'mapa') return S.vistaMapa();
+    if (p[0] && p[1] === 'mapa' && find(S.empresas, p[0])) return S.vistaMapa(p[0]);
     if (p[0] === 'ranking') return ranking();
     if (p[0] === 'panorama') return panorama();
     if (p[0]) { var e = find(S.empresas, p[0]); if (e) return empresa(e); }
@@ -236,7 +239,8 @@
     }
     var h = '<p class="lead">En 2025 el mundo produjo 1 849 millones de toneladas de acero crudo. Más de la mitad, en China.</p><ul class="rows">' +
       row('#/industria/panorama', 'Panorama y mercado', 'Cifras mundiales, México, aranceles y descarbonización') +
-      row('#/industria/ranking', 'Ranking mundial 2025', 'Los mayores productores según worldsteel') + '</ul>' +
+      row('#/industria/ranking', 'Ranking mundial 2025', 'Los mayores productores según worldsteel') +
+      row('#/industria/mapa', 'Mapa de acerías', 'Plantas principales del mundo, con carreteras y vías de ferrocarril', S.acerias.length) + '</ul>' +
       grupo('México y Grupo Techint', 'mx') + grupo('Jugadores globales', 'gl') + grupo('Cadena de suministro', 'ca') +
       '<p class="nota">Datos corporativos a ' + S.ind.corte + '. Producción de acero crudo 2025 según la World Steel Association.</p>';
     return { title: 'Industria', html: h };
@@ -319,6 +323,7 @@
   }
   function empresa(e) {
     var r = (S.resumen && S.resumen[e.id]) || [], pl = plantas(e.id), cli = clientes(e.id);
+    var nAc = (S.acerias || []).filter(function (a) { return a[7] === e.id; }).length;
     var lab = ['Sede', 'Fundada', 'Acero crudo 2025', 'Ruta', 'Dirige', 'Controla'];
     var tiles = lab.map(function (l, i) { return r[i] ? '<div><b>' + l + '</b><span>' + r[i] + '</span></div>' : ''; }).join('');
     var secs = [];
@@ -330,6 +335,7 @@
     if (e.hoy.length) secs.push(['Hoy', '', S.ul(e.hoy)]);
     var h = '<div class="eh"><h2>' + e.n + '</h2>' + S.logo(e.id, 'emp') + '</div><p class="lead" style="margin-bottom:10px">' + e.res + '</p>' + (tiles ? '<div class="tiles">' + tiles + '</div>' : '') +
       '<div class="accs">' + secs.map(function (x) { return acc(x[0], x[1], x[2], secs.length === 1); }).join('') + '</div>' +
+      (nAc ? '<ul class="rows" style="margin-top:14px">' + row('#/industria/' + e.id + '/mapa', 'Ver sus acerías en el mapa', nAc + (nAc === 1 ? ' planta ubicada' : ' plantas ubicadas')) + '</ul>' : '') +
       '<p class="small" style="margin-top:14px">Toca una sección para abrirla. Datos a ' + S.ind.corte + '.</p>';
     return { title: e.n, html: h, after: function (root) {
       var ds = root.querySelectorAll('details.acc');
