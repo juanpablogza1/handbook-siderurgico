@@ -1,6 +1,6 @@
 /* Service worker: guarda toda la app para uso sin conexión.
    Sube VERSION en cada publicación para que los teléfonos descarguen el contenido nuevo. */
-var VERSION = 'siderurgica-v1.7.0';
+var VERSION = 'siderurgica-v1.7.1';
 var ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/core.js', 'js/anim-lib.js', 'js/anim-1.js', 'js/anim-2.js', 'js/anim-3.js',

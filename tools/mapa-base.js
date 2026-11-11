@@ -72,23 +72,22 @@ var road = function (lo, hi) { return function (p) { return !/Ferry/.test(p.type
 write('mapa-caminos.js', 'mapaCaminos', lines('ne_10m_roads.geojson', road(0, 5), TC, 0.05));
 write('mapa-caminos2.js', 'mapaCaminos2', lines('ne_10m_roads.geojson', road(6, 7), TC, 0.05));
 
-/* Silueta mínima del mundo para miniaturas (décimas de grado, misma proyección). */
+/* Mapa pequeño con todos los países para miniaturas (décimas de grado, misma proyección). */
 (function () {
-  var t110 = require('world-atlas/land-110m.json'), d = '';
-  tj.feature(t110, t110.objects.land).features.forEach(function (f) {
+  var t110 = require('world-atlas/countries-110m.json'), d = '';
+  tj.feature(t110, t110.objects.countries).features.forEach(function (f) {
+    if (f.properties.name === 'Antarctica' || !f.geometry) return;
     var polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates;
     polys.forEach(function (p) {
-      var r = p[0], minx = 1e9, maxx = -1e9, miny = 1e9, maxy = -1e9;
-      r.forEach(function (c) { minx = Math.min(minx, c[0]); maxx = Math.max(maxx, c[0]); miny = Math.min(miny, c[1]); maxy = Math.max(maxy, c[1]); });
-      if (maxy < -60 || (maxx - minx) * (maxy - miny) < 12 || maxx - minx > 300) return;
-      var s = dp(r, 0.7), px = 0, py = 0, o = '';
-      if (s.length < 4) return;
-      s.forEach(function (c, i) {
+      var r = p[0], cruza = false, px = 0, py = 0, o = '', k = 0;
+      for (var j = 1; j < r.length; j++) if (Math.abs(r[j][0] - r[j - 1][0]) > 180) cruza = true;
+      if (cruza) r = r.map(function (c) { return c[0] < 0 ? [c[0] + 360, c[1]] : c; });
+      dp(r, 0.12).forEach(function (c, i) {
         var x = Math.round((c[0] + 180) * 10), y = Math.round(merc(c[1]) / 10);
-        if (i === 0) { o += 'M' + x + ' ' + y; } else { var dx = x - px, dy = y - py; if (!dx && !dy) return; o += 'l' + dx + (dy < 0 ? '' : ' ') + dy; }
+        if (i === 0) { o += 'M' + x + ' ' + y; k++; } else { var dx = x - px, dy = y - py; if (!dx && !dy) return; o += 'l' + dx + (dy < 0 ? '' : ' ') + dy; k++; }
         px = x; py = y;
       });
-      d += o + 'z';
+      if (k >= 3) d += o + 'z';
     });
   });
   write('mapa-mini.js', 'mapaMini', d);

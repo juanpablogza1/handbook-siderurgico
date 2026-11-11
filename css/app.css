@@ -328,14 +328,10 @@ a.pl p i{font-style:normal;color:var(--mut)}
 .iv-bars .g>i>i{display:block;height:100%;border-radius:4px}
 .iv-bars>div .g>i>i{opacity:.55}
 .iv-bars .v{width:44px;text-align:right;font:750 14px var(--body);flex:none}
-.iv-tm{position:relative;margin:0 -16px;height:400px;background:var(--bg)}
+.iv-tm{position:relative;margin:0 -16px;height:540px;background:var(--bg)}
 .iv-tm>a,.iv-tm>div{position:absolute;padding:1.5px;color:#14110c;text-decoration:none}
-.iv-tm span{display:flex;flex-direction:column;justify-content:flex-end;width:100%;height:100%;border-radius:5px;padding:6px 7px;overflow:hidden}
-.iv-tm span.off{background:#55646f!important;color:#dfe6ea}
-.iv-tm b{font:750 12px/1.1 var(--body);overflow:hidden;text-overflow:ellipsis;max-height:2.2em;flex:none}
+.iv-tm span{display:flex;flex-direction:column;justify-content:flex-end;width:100%;height:100%;border-radius:5px;padding:5px;overflow:hidden}
+.iv-tm span.off{background:#55646f!important;color:#eef2f4}
+.iv-tm b{font:750 12px/1.1 var(--body);white-space:nowrap}
+.iv-tm b.v{writing-mode:vertical-rl;transform:rotate(180deg);align-self:center;margin:auto 0 0}
 .iv-tm em{font:800 15px/1 var(--cond);font-style:normal;margin-top:2px}
-.iv-tm .g b{font-size:17px}.iv-tm .g em{font-size:34px}
-.iv-tm .m em{font-size:19px}
-.iv-tm .s span{padding:4px 5px}.iv-tm .s b{font-size:10.5px;white-space:nowrap;display:block}
-.iv-tm .x span{padding:0}
-.iv-tm .g.n b{font-size:13px}

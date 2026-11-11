@@ -26,10 +26,10 @@
   var R = 36000 / (2 * Math.PI), Y0 = R * Math.log(Math.tan(Math.PI / 4 + 85 * Math.PI / 360));
   function my(lat) { return (Y0 - R * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360))) / 10; }
   function miniMapa() {
-    var x1 = 520, x2 = 3360, y1 = my(68), y2 = my(-45);
+    var x1 = 540, x2 = 3360, y1 = my(72), y2 = my(-48);
     return '<svg viewBox="' + x1 + ' ' + y1.toFixed(0) + ' ' + (x2 - x1) + ' ' + (y2 - y1).toFixed(0) + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-      '<path d="' + (S.mapaMini || '') + '" fill="#2c3945"/>' +
-      S.acerias.map(function (a) { return '<circle cx="' + ((a[4] + 180) * 10).toFixed(0) + '" cy="' + my(a[3]).toFixed(0) + '" r="' + (a[6] >= 8 ? 13 : 9) + '" fill="#ff3b30"/>'; }).join('') + '</svg>';
+      '<path d="' + (S.mapaMini || '') + '" fill="#3b4b58" stroke="#141b22" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>' +
+      S.acerias.map(function (a) { return '<circle cx="' + ((a[4] + 180) * 10).toFixed(0) + '" cy="' + my(a[3]).toFixed(0) + '" r="' + (a[6] >= 8 ? 26 : 18) + '" fill="#ff3b30" stroke="#2a0806" stroke-width="5"/>'; }).join('') + '</svg>';
   }
   function reparto() {
     var resto = MUNDO.total, ps = MUNDO.partes.slice();
@@ -106,13 +106,23 @@
     return out;
   }
   function mosaico() {
-    var W = 390, H = 400, rs = S.ranking, box = treemap(rs.map(function (r) { return r[3]; }), W, H);
+    var W = 390, H = 540, rs = S.ranking, box = treemap(rs.map(function (r) { return r[3]; }), W, H);
+    var CORTO = { 'Cleveland-Cliffs': 'Cliffs', 'Steel Dynamics': 'SDI', 'Grupo Techint': 'Techint', 'thyssenkrupp': 'thyssenkrupp', 'Shandong Steel': 'Shandong', 'Liuzhou Steel': 'Liuzhou', 'Hyundai Steel': 'Hyundai', 'Hunan Steel': 'Hunan', 'JFE Steel': 'JFE', 'JSW Steel': 'JSW', 'Tata Steel': 'Tata', 'Nippon Steel': 'Nippon Steel', 'China Baowu': 'China Baowu' };
+    var MINI = { 'thyssenkrupp': 'tk Steel', 'Steel Dynamics': 'SDI', 'Shandong Steel': 'Shandong' };
     var cells = rs.map(function (r, i) {
-      var b = box[i], col = REG[PAIS[r[2]] || 'eu'][1], pw = 100 * b[2] / W, ph = 100 * b[3] / H;
-      var cw = b[2], chh = b[3], cls = cw > 100 && chh > 80 ? (cw > 150 ? 'g' : 'g n') : cw > 58 && chh > 54 ? 'm' : cw > 44 && chh > 24 ? 's' : 'x';
-      var st = 'left:' + (100 * b[0] / W).toFixed(2) + '%;top:' + (100 * b[1] / H).toFixed(2) + '%;width:' + pw.toFixed(2) + '%;height:' + ph.toFixed(2) + '%';
-      var inner = '<span style="background:' + col + '"' + (r[4] ? '' : ' class="off"') + '>' + (cls === 'x' ? '' : '<b>' + esc(r[1].replace('Cleveland-', '').replace('Steel Dynamics', 'SDI').replace('Grupo ', '')) + '</b>' + (cls === 's' ? '' : '<em>' + r[3].toFixed(1) + '</em>')) + '</span>';
-      return r[4] ? '<a class="' + cls + '" style="' + st + '" href="#/industria/' + r[4] + '" aria-label="' + esc(r[1]) + ', ' + r[3] + ' Mt">' + inner + '</a>' : '<div class="' + cls + '" style="' + st + '">' + inner + '</div>';
+      var b = box[i], col = REG[PAIS[r[2]] || 'eu'][1], cw = b[2] - 3, ch = b[3] - 3, pad = 10, nm = CORTO[r[1]] || r[1], num = r[3].toFixed(1), K = 0.65;
+      var st = 'left:' + (100 * b[0] / W).toFixed(2) + '%;top:' + (100 * b[1] / H).toFixed(2) + '%;width:' + (100 * b[2] / W).toFixed(2) + '%;height:' + (100 * b[3] / H).toFixed(2) + '%';
+      var fh = Math.min(17, (cw - pad) / (K * nm.length)), lab;
+      if (fh >= 9.5 && ch >= fh + 10) {
+        var fn = Math.min(cw > 150 ? 36 : 22, (cw - pad) / (0.58 * num.length), (ch - fh - 14));
+        lab = '<b style="font-size:' + fh.toFixed(1) + 'px">' + esc(nm) + '</b>' + (fn >= 11 ? '<em style="font-size:' + fn.toFixed(1) + 'px">' + num + '</em>' : '');
+      } else {
+        if ((ch - pad) / (K * nm.length) < 8.5 && MINI[r[1]]) nm = MINI[r[1]];
+        var fv = Math.max(8.5, Math.min(13, (ch - pad) / (K * nm.length), cw - 6));
+        lab = '<b class="v" style="font-size:' + fv.toFixed(1) + 'px">' + esc(nm) + '</b>';
+      }
+      var inner = '<span style="background:' + col + '"' + (r[4] ? '' : ' class="off"') + '>' + lab + '</span>';
+      return r[4] ? '<a style="' + st + '" href="#/industria/' + r[4] + '" aria-label="' + esc(r[1]) + ', ' + r[3] + ' Mt">' + inner + '</a>' : '<div style="' + st + '">' + inner + '</div>';
     }).join('');
     return '<p class="lead" style="margin-bottom:8px">Los 25 mayores productores de 2025. El área de cada bloque es su producción en Mt.</p>' +
       '<div class="iv-tm">' + cells + '</div>' +
