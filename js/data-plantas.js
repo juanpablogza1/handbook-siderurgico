@@ -240,6 +240,65 @@ S.plantas = {
     ['Gelsenkirchen', 'Renania del Norte-Westfalia', 'Acero eléctrico de grano orientado.'],
     ['Siegerland', 'Kreuztal y Finnentrop', 'Recubrimiento y prepintado.']
   ],
+  shagang: [
+    ["Zhangjiagang", "Jiangsu, China", "Sede y planta principal: altos hornos, convertidores y hornos eléctricos; largos, lámina caliente y placa."],
+    ["Huaigang Special Steel", "Huai'an, Jiangsu", "Aceros especiales en barra."],
+    ["Anyang Yongxing", "Anyang, Henan", "Largos."],
+    ["Dongbei Special Steel", "Dalian, Liaoning", "Aceros especiales; bajo su control desde 2017."]
+  ],
+  jianlong: [
+    ["Tangshan Jianlong", "Zunhua, Tangshan, Hebei", "Planta de origen; fleje y largos."],
+    ["Shanxi Jianlong (antes Haixin)", "Yuncheng, Shanxi", "Integrada; comprada en quiebra en 2015."],
+    ["Xingtai Steel", "Xingtai, Hebei", "Alambrón de calidad; bajo su gestión desde 2021."],
+    ["Xining Special Steel", "Xining, Qinghai", "Aceros especiales; controlada desde 2023."],
+    ["Beiman Special Steel", "Qiqihar, Heilongjiang", "Aceros especiales."],
+    ["Eastern Steel", "Kemaman, Malasia", "Integrada; 60 % de Jianlong."]
+  ],
+  delong: [
+    ["Delong Steel", "Xingtai, Hebei", "Planta de origen; fleje y lámina caliente."],
+    ["New Tianjin Steel", "Tianjin", "Grupo formado con las acerías de la quebrada Bohai Steel."],
+    ["Dexin Steel", "Morowali, Célebes, Indonesia", "Integrada de 7 Mt; planchón, lámina caliente y alambrón."]
+  ],
+  shougang: [
+    ["Jingtang", "Caofeidian, Tangshan, Hebei", "Integrada costera; lámina automotriz, hojalata y placa."],
+    ["Qian'an (Qiangang)", "Qian'an, Hebei", "Integrada; lámina caliente, fría y acero eléctrico."],
+    ["Tonghua", "Jilin", "Integrada regional."],
+    ["Shougang Hierro Perú", "Marcona, Ica, Perú", "Mina de hierro, planta de pélet y puerto de San Nicolás."]
+  ],
+  jingye: [
+    ["Jingye Iron and Steel", "Pingshan, Hebei", "Planta principal integrada; varilla y placa."],
+    ["Guangdong Jingye", "Guangdong", "Largos."]
+  ],
+  hunan: [
+    ["Xiangtan Steel", "Xiangtan, Hunan", "Integrada; placa gruesa y alambrón."],
+    ["Lianyuan Steel", "Loudi, Hunan", "Integrada; lámina caliente y fría."],
+    ["Hengyang Valin Steel Tube", "Hengyang, Hunan", "Tubo sin costura."],
+    ["VAMA", "Loudi, Hunan", "Laminación en frío, recocido y galvanizado automotriz, con ArcelorMittal."],
+    ["Yangchun New Steel", "Yangchun, Guangdong", "Largos."]
+  ],
+  liuzhou: [
+    ["Liuzhou", "Guangxi", "Planta de origen; se orienta a aceros de mayor valor."],
+    ["Fangchenggang (Guangxi Steel)", "Guangxi", "Base costera integrada; primera fase concluida en 2024; lámina y placa ancha."]
+  ],
+  sail: [
+    ["Bhilai", "Chhattisgarh", "Integrada; riel, estructurales pesados y placa."],
+    ["Bokaro", "Jharkhand", "Integrada de planos: lámina caliente, fría y galvanizada."],
+    ["Rourkela", "Odisha", "Integrada; placa, lámina y tubo."],
+    ["Durgapur", "Bengala Occidental", "Integrada; largos, ruedas y ejes de ferrocarril."],
+    ["IISCO Burnpur", "Bengala Occidental", "Integrada; estructurales y alambrón."],
+    ["Aceros especiales", "Salem, Durgapur y Bhadravati", "Inoxidable y aleados."]
+  ],
+  shandong: [
+    ["Rizhao", "Shandong", "Base costera integrada; placa y lámina. Baosteel tiene 48.6 %."],
+    ["Laiwu", "Shandong", "Integrada; perfiles y largos."]
+  ],
+  hyundai: [
+    ["Dangjin", "Chungcheong del Sur, Corea", "Integrada con altos hornos; lámina automotriz y placa."],
+    ["Incheon", "Corea", "Hornos eléctricos; perfiles H y varilla."],
+    ["Pohang", "Corea", "Hornos eléctricos; largos."],
+    ["Suncheon", "Corea", "Laminación en frío y galvanizado."],
+    ["Hyundai-POSCO Louisiana Steel", "Donaldsonville, Luisiana, Estados Unidos", "En construcción: reducción directa y horno eléctrico, 2.7 Mt; arranque previsto en 2029."]
+  ],
   ssab: [
     ['Luleå', 'Suecia', 'Integrada de planchón; se sustituye por una miniacería eléctrica.'],
     ['Oxelösund', 'Suecia', 'Placa templada; en conversión a horno eléctrico.'],
@@ -273,5 +332,15 @@ S.resumen = {
   sdi: ['Fort Wayne, Indiana', '1993', '10.70 Mt, lugar 40', 'Horno eléctrico', 'Mark Millett; Wagler en 2027', 'Capital disperso (NASDAQ)'],
   gerdau: ['São Paulo', '1901', '13.03 Mt, lugar 31', 'Horno eléctrico; una integrada', 'Gustavo Werneck, CEO', 'Familia Gerdau Johannpeter'],
   thyssenkrupp: ['Duisburgo', '1999; Krupp, 1811', '9.41 Mt, lugar 47', 'Alto horno y convertidor', 'Miguel López (corporativo)', 'thyssenkrupp AG; en venta'],
-  ssab: ['Estocolmo', '1978', '', 'Integrada, hacia horno eléctrico', '', 'LKAB y Estado finlandés']
+  ssab: ['Estocolmo', '1978', '', 'Integrada, hacia horno eléctrico', '', 'LKAB y Estado finlandés'],
+  shagang: ["Zhangjiagang, Jiangsu", "1975", "39.10 Mt, lugar 6", "Alto horno; hornos eléctricos", "Shen Bin", "Familia Shen (privada)"],
+  jianlong: ["Pekín", "1998", "38.02 Mt, lugar 7", "Alto horno y convertidor", "Zhang Zhixiang", "Zhang Zhixiang (privada)"],
+  delong: ["Shanghái; origen en Hebei", "1992", "32.03 Mt, lugar 9", "Alto horno y convertidor", "Ding Liguo", "Ding Liguo (privada)"],
+  shougang: ["Pekín", "1919", "30.23 Mt, lugar 12", "Alto horno y convertidor", "Designados por Pekín", "Gobierno de Pekín"],
+  jingye: ["Pingshan, Hebei", "1988; acero, 2002", "23.91 Mt, lugar 13", "Alto horno y convertidor", "Li Ganpo", "Li Ganpo (privada)"],
+  hunan: ["Changsha, Hunan", "1997", "22.60 Mt, lugar 15", "Alto horno y convertidor", "Li Jianyu (filial listada)", "Provincia de Hunan"],
+  liuzhou: ["Liuzhou, Guangxi", "1958", "21.00 Mt, lugar 17", "Alto horno y convertidor", "Designados por Guangxi", "Región de Guangxi"],
+  sail: ["Nueva Delhi", "1973; origen en 1954", "19.44 Mt, lugar 18", "Alto horno y convertidor", "Ashok Kumar Panda", "Gobierno de la India"],
+  shandong: ["Jinan, Shandong", "2008", "18.26 Mt, lugar 19", "Alto horno y convertidor", "Designados por la provincia", "Shandong y Baowu (49 %)"],
+  hyundai: ["Incheon y Seúl", "1953", "17.95 Mt, lugar 20", "Alto horno; hornos eléctricos", "Lee Bo-ryong", "Grupo Hyundai Motor"]
 };

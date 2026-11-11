@@ -5,7 +5,10 @@
   function px(lon) { return (lon + 180) * 100; }
   function py(lat) { return Y0 - R * Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)); }
 
-  var COL = { mar: '#141b22', tierra: '#27333d', borde: '#3d4b56', camino: '#77838d', via: '#35d0ff', planta: '#ff3b30', tenue: '#7d4a48' };
+  var COL = { mar: '#141b22', tierra: '#27333d', borde: '#3d4b56', camino: '#77838d', via: '#35d0ff', planta: '#ff3b30', tenue: '#7d4a48', mina: '#ffc53d', minaTenue: '#6f6138' };
+  var KM = 'sid.mapaMinas';
+  function leerMinas() { try { return localStorage.getItem(KM) !== '0'; } catch (e) { return true; } }
+  function guardarMinas(v) { try { localStorage.setItem(KM, v ? '1' : '0'); } catch (e) {} }
   var REG = [['Mundo', -125, 155, -42, 68], ['México', -118, -86, 14, 33], ['Norteamérica', -128, -62, 14, 55], ['Sudamérica', -82, -34, -40, 12],
     ['Europa', -11, 45, 35, 68], ['Oriente Medio y África', -18, 62, -36, 40], ['India', 67, 90, 7, 31], ['China', 97, 126, 19, 45],
     ['Japón y Corea', 124, 146, 30, 45], ['Asia-Pacífico', 95, 178, -42, 25]];
@@ -30,15 +33,16 @@
   S.vistaMapa = function (emp) {
     var e = null; if (emp) S.empresas.forEach(function (x) { if (x.id === emp) e = x; });
     var n = S.acerias.length;
-    var h = '<p class="lead" style="margin-bottom:10px">' + (e ? 'Acerías de ' + e.n + ' en rojo vivo; las demás, atenuadas.' : n + ' acerías principales. Arrastra para mover y pellizca para acercar.') + '</p>' +
+    var h = '<p class="lead" style="margin-bottom:10px">' + (e ? 'Acerías de ' + e.n + ' en rojo vivo; las demás, atenuadas.' : n + ' acerías y ' + (S.minas || []).length + ' minas de hierro. Arrastra para mover y pellizca para acercar.') + '</p>' +
       '<div class="presets" id="mreg">' + REG.map(function (r, i) { return '<button type="button" data-i="' + i + '">' + r[0] + '</button>'; }).join('') + '</div>' +
       '<div class="mapa"><canvas id="mcv" aria-label="Mapa mundial de acerías"></canvas>' +
       '<div class="mz"><button type="button" data-z="1" aria-label="Acercar">+</button><button type="button" data-z="-1" aria-label="Alejar">−</button></div>' +
-      '<div class="mley"><span><i class="p"></i>Acería</span><span><i class="v"></i>Ferrocarril</span><span><i class="c"></i>Carretera</span></div>' +
+      '<div class="mley"><span><i class="p"></i>Acería</span><span id="mleym"><i class="m"></i>Mina</span><span><i class="v"></i>Ferrocarril</span><span><i class="c"></i>Carretera</span></div>' +
       '<div class="mst" id="mst">Cargando mapa…</div></div>' +
-      '<div class="presets" id="mrut" style="margin-top:10px"><button type="button" data-r="" class="on">Todas</button>' + Object.keys(S.rutas).map(function (k) { return '<button type="button" data-r="' + k + '">' + S.rutas[k][0] + '</button>'; }).join('') + '</div>' +
+      '<label class="msw"><span><i class="m"></i>Minas de mineral de hierro</span><input type="checkbox" id="mmin"' + (leerMinas() ? ' checked' : '') + '><b></b></label>' +
+      '<div class="presets" id="mrut"><button type="button" data-r="" class="on">Todas</button>' + Object.keys(S.rutas).map(function (k) { return '<button type="button" data-r="' + k + '">' + S.rutas[k][0] + '</button>'; }).join('') + '</div>' +
       '<div id="minfo"></div><div id="mlist"></div>' +
-      '<p class="small" style="margin-top:14px">Selección de plantas principales, no un inventario completo: en el mundo operan más de mil acerías. Ubicación a nivel de ciudad y capacidades aproximadas, a ' + S.aceriasCorte + '. Países, carreteras y vías: Natural Earth. El mapa muestra carreteras principales, no calles.</p>';
+      '<p class="small" style="margin-top:14px">Selección de acerías y minas principales, no un inventario completo: en el mundo operan más de mil acerías. Ubicación aproximada y capacidades nominales, a ' + S.aceriasCorte + '. Países, carreteras y vías: Natural Earth. El mapa muestra carreteras principales, no calles.</p>';
     return { title: e ? 'Mapa: ' + e.n : 'Mapa de acerías', html: h, after: function (root) { montar(root, emp); } };
   };
 
@@ -47,7 +51,10 @@
     var info = root.querySelector('#minfo'), list = root.querySelector('#mlist');
     var W = 0, H = 0, dpr = 1, cx = 18000, cy = py(20), k = 0.01, kMin = 0.005, kMax = 1.6;
     var ruta = '', sel = -1, raf = 0, moving = false, listT = 0;
-    var P = S.acerias.map(function (a, i) { return { i: i, a: a, x: px(a[4]), y: py(a[3]), mine: !emp || a[7] === emp }; });
+    var P = S.acerias.map(function (a, i) { return { i: i, k: 'p', a: a, x: px(a[4]), y: py(a[3]), mine: !emp || a[7] === emp }; });
+    var Q = (S.minas || []).map(function (a, i) { return { i: P.length + i, k: 'm', a: a, x: px(a[4]), y: py(a[3]), mine: !emp || a[6] === emp }; });
+    var ALL = P.concat(Q), verMinas = leerMinas();
+    function capDe(p) { return (p.k === 'm' ? p.a[5] : p.a[6]) || 0; }
 
     function size() {
       var w = cv.clientWidth, h = cv.clientHeight; if (!w || !h) return false;
@@ -66,10 +73,10 @@
       var x1 = px(lo1), x2 = px(lo2), y1 = py(la2), y2 = py(la1);
       k = Math.min(W / (x2 - x1), H / (y2 - y1)); cx = (x1 + x2) / 2; cy = (y1 + y2) / 2; clamp(); paint();
     }
-    function vis(p) { return (!ruta || p.a[5] === ruta); }
+    function vis(p) { return p.k === 'm' ? verMinas : (!ruta || p.a[5] === ruta); }
     function sx(p) { return (p.x - cx) * k + W / 2; }
     function sy(p) { return (p.y - cy) * k + H / 2; }
-    function rad(p) { var c = p.a[6], z = k / kMin; return (c >= 8 ? 6.5 : c >= 3 ? 5 : 4) * (z < 1.6 ? 0.55 : z < 4 ? 0.75 : 1); }
+    function rad(p) { var c = p.a[6], z = k / kMin; return (p.k === 'm' ? 4.6 : c >= 8 ? 6.5 : c >= 3 ? 5 : 4) * (z < 1.6 ? 0.55 : z < 4 ? 0.75 : 1); }
 
     function draw() {
       raf = 0; if (!size()) return;
@@ -86,7 +93,14 @@
         ctx.globalAlpha = 1;
       }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var inview = [];
+      var inview = [], minasVista = [];
+      if (verMinas) Q.forEach(function (p) {
+        var x = sx(p), y = sy(p); if (x < -10 || y < -10 || x > W + 10 || y > H + 10) return;
+        var r = rad(p) * (p.mine ? 1.15 : 0.8);
+        ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r, y); ctx.lineTo(x, y + r); ctx.lineTo(x - r, y); ctx.closePath();
+        ctx.fillStyle = p.mine ? COL.mina : COL.minaTenue; ctx.fill(); ctx.lineWidth = 1.2; ctx.strokeStyle = '#2b2205'; ctx.stroke();
+        if (p.mine) minasVista.push(p);
+      });
       [false, true].forEach(function (front) {
         P.forEach(function (p) {
           if (!vis(p) || p.mine !== front) return;
@@ -97,45 +111,58 @@
           if (front) inview.push(p);
         });
       });
-      if (sel >= 0 && vis(P[sel])) {
-        var q = P[sel], qx = sx(q), qy = sy(q);
+      if (sel >= 0 && vis(ALL[sel])) {
+        var q = ALL[sel], qx = sx(q), qy = sy(q);
         ctx.beginPath(); ctx.arc(qx, qy, rad(q) + 4, 0, 6.2832); ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke();
       }
-      if (inview.length && inview.length <= 16) {
+      var etq = inview.concat(minasVista);
+      if (etq.length && etq.length <= 18) {
         ctx.font = '600 11px ' + (getComputedStyle(document.body).fontFamily || 'sans-serif'); ctx.textBaseline = 'middle';
         var boxes = [];
-        inview.slice().sort(function (p, q) { return (q.i === sel) - (p.i === sel) || (q.a[6] || 0) - (p.a[6] || 0); }).forEach(function (p) {
+        etq.sort(function (p, q) { return (q.i === sel) - (p.i === sel) || (p.k === 'm') - (q.k === 'm') || capDe(q) - capDe(p); }).forEach(function (p) {
           var t = p.a[0], w = ctx.measureText(t).width, x = sx(p) + rad(p) + 4, y = sy(p);
           if (x + w > W - 4) x = sx(p) - rad(p) - 4 - w;                       // sin espacio a la derecha: a la izquierda
           var b = [x - 2, y - 8, x + w + 2, y + 8];
           if (boxes.some(function (o) { return b[0] < o[2] && b[2] > o[0] && b[1] < o[3] && b[3] > o[1]; })) return;
           boxes.push(b);
-          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(20,27,34,.9)'; ctx.strokeText(t, x, y); ctx.fillStyle = '#fff'; ctx.fillText(t, x, y);
+          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(20,27,34,.9)'; ctx.strokeText(t, x, y); ctx.fillStyle = p.k === 'm' ? '#ffe7a8' : '#fff'; ctx.fillText(t, x, y);
         });
       }
-      clearTimeout(listT); listT = setTimeout(function () { lista(inview); }, 180);
+      clearTimeout(listT); listT = setTimeout(function () { lista(inview, minasVista); }, 180);
     }
     function paint() { if (!raf) raf = requestAnimationFrame(draw); }
 
     function card() {
       if (sel < 0) { info.innerHTML = ''; return; }
-      var a = S.acerias[sel], emp2 = null; if (a[7]) S.empresas.forEach(function (x) { if (x.id === a[7]) emp2 = x; });
+      var emp2 = null;
+      if (ALL[sel].k === 'm') {
+        var m = ALL[sel].a; if (m[6]) S.empresas.forEach(function (x) { if (x.id === m[6]) emp2 = x; });
+        info.innerHTML = '<div class="mcard mina"><b>' + m[0] + '</b><span class="u">' + m[1] + ' · ' + m[2] + '</span>' +
+          '<div class="tags"><i>Mina de hierro</i>' + (m[5] ? '<i>≈ ' + m[5] + ' Mt/año de mineral</i>' : '') + '</div>' +
+          (m[7] ? '<p>' + m[7] + '.</p>' : '') + (emp2 ? '<a class="mlk" href="#/industria/' + emp2.id + '">Ver ' + emp2.n + '</a>' : '') + '</div>';
+        return;
+      }
+      var a = S.acerias[sel]; if (a[7]) S.empresas.forEach(function (x) { if (x.id === a[7]) emp2 = x; });
       info.innerHTML = '<div class="mcard"><b>' + a[0] + '</b><span class="u">' + a[1] + ' · ' + a[2] + '</span>' +
         '<div class="tags"><i>' + S.rutas[a[5]][0] + '</i>' + (a[6] ? '<i>' + capTxt(a) + '</i>' : '') + '</div>' +
         (a[8] ? '<p>' + a[8] + '.</p>' : '') +
         (emp2 ? '<a class="mlk" href="#/industria/' + emp2.id + '">Ver ' + emp2.n + '</a>' : '') + '</div>';
     }
-    function lista(inview) {
+    function lista(inview, minas) {
       if (!list.isConnected) return;
       var a = inview.slice().sort(function (p, q) { return (q.a[6] || 0) - (p.a[6] || 0) || p.a[0].localeCompare(q.a[0], 'es'); });
       list.innerHTML = '<h3>En esta vista <span class="small" style="font-weight:500">· ' + a.length + (a.length === 1 ? ' acería' : ' acerías') + '</span></h3>' +
         (a.length ? '<ul class="rows">' + a.slice(0, 30).map(function (p) {
           return '<li><a href="#" data-p="' + p.i + '"><span class="gr"><span class="tt">' + p.a[0] + '</span><span class="ss">' + p.a[1] + ' · ' + p.a[2] + '</span></span><span class="rt">' + (capTxt(p.a).replace('/año', '') || S.rutas[p.a[5]][0]) + '</span></a></li>';
-        }).join('') + '</ul>' + (a.length > 30 ? '<p class="small">Acerca el mapa para ver el resto.</p>' : '') : '<p class="small">Ninguna acería con ese filtro en esta zona.</p>');
+        }).join('') + '</ul>' + (a.length > 30 ? '<p class="small">Acerca el mapa para ver el resto.</p>' : '') : '<p class="small">Ninguna acería con ese filtro en esta zona.</p>') +
+        (minas && minas.length ? '<h3>Minas en esta vista <span class="small" style="font-weight:500">· ' + minas.length + '</span></h3><ul class="rows">' +
+          minas.slice().sort(function (p, q) { return capDe(q) - capDe(p) || p.a[0].localeCompare(q.a[0], 'es'); }).slice(0, 20).map(function (p) {
+            return '<li><a href="#" data-p="' + p.i + '"><span class="gr"><span class="tt">' + p.a[0] + '</span><span class="ss">' + p.a[1] + ' · ' + p.a[2] + '</span></span><span class="rt">' + (p.a[5] ? '≈ ' + p.a[5] + ' Mt' : 'Mina') + '</span></a></li>';
+          }).join('') + '</ul>' + (minas.length > 20 ? '<p class="small">Acerca el mapa para ver el resto.</p>' : '') : '');
     }
     function pick(i, center) {
       sel = i; card();
-      if (center && i >= 0) { cx = P[i].x; cy = P[i].y; k = Math.max(k, kMin * 14); clamp(); }
+      if (center && i >= 0) { cx = ALL[i].x; cy = ALL[i].y; k = Math.max(k, kMin * 14); clamp(); }
       paint();
     }
 
@@ -171,7 +198,7 @@
       if (!Object.keys(pts).length) { moving = false; paint(); }
       if (tap && e.type === 'pointerup' && tap.d < 10 && Date.now() - tap.t < 500) {
         var best = -1, bd = 26;
-        P.forEach(function (p) { if (!vis(p)) return; var d = Math.hypot(sx(p) - tap.x, sy(p) - tap.y) - (p.mine ? 0 : 6); if (d < bd) { bd = d; best = p.i; } });
+        ALL.forEach(function (p) { if (!vis(p)) return; var d = Math.hypot(sx(p) - tap.x, sy(p) - tap.y) - (p.mine ? 0 : 6); if (d < bd) { bd = d; best = p.i; } });
         pick(best, false);
       }
       tap = null;
@@ -184,9 +211,17 @@
     root.querySelector('#mrut').addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b) return;
       ruta = b.dataset.r; var bs = this.querySelectorAll('button'); for (var i = 0; i < bs.length; i++) bs[i].classList.toggle('on', bs[i] === b);
-      if (sel >= 0 && !vis(P[sel])) { sel = -1; card(); }
+      if (sel >= 0 && !vis(ALL[sel])) { sel = -1; card(); }
       paint();
     });
+    var sw = root.querySelector('#mmin'), ley = root.querySelector('#mleym');
+    function minasUI() { ley.style.display = verMinas ? '' : 'none'; }
+    sw.addEventListener('change', function () {
+      verMinas = sw.checked; guardarMinas(verMinas); minasUI();
+      if (sel >= 0 && !vis(ALL[sel])) { sel = -1; card(); }
+      paint();
+    });
+    minasUI();
     list.addEventListener('click', function (e) {
       var a = e.target.closest('a[data-p]'); if (!a) return;
       e.preventDefault(); e.stopPropagation(); pick(+a.dataset.p, true);
@@ -207,6 +242,6 @@
       if (!paths) paths = { paises: new Path2D(S.mapaPaises), vias: new Path2D(S.mapaVias), caminos: new Path2D(S.mapaCaminos), caminos2: new Path2D(S.mapaCaminos2) };
       st.style.display = 'none'; paint();
     }, function () { st.textContent = 'No se pudo cargar el mapa base. Revisa la conexión y vuelve a abrir esta pantalla.'; });
-    S._mapa = { fit: fit, pick: pick, state: function () { return { cx: cx, cy: cy, k: k, kMin: kMin, sel: sel, W: W, H: H }; } };
+    S._mapa = { fit: fit, pick: pick, state: function () { return { cx: cx, cy: cy, k: k, kMin: kMin, sel: sel, W: W, H: H, minas: verMinas, nP: P.length }; } };
   }
 })();

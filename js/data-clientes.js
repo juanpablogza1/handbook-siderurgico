@@ -98,6 +98,9 @@ S.clientes = {
     ['Vehículos pesados y automotriz', '', ['Volvo Group', 'Volvo Cars', 'Mercedes-Benz'], 'Primeros compradores de su acero sin combustibles fósiles.'],
     ['Maquinaria y minería', '', [], 'Placa antidesgaste para cajas de volteo, cucharones y trituradoras.'],
     ['Construcción y energía', '', [], 'Placa para torres eólicas y estructura.']] },
+  hunan: {"nota": "VAMA se anunció para surtir a armadoras internacionales y chinas.", "seg": [["Automotriz", "", [], "Lámina de alta resistencia y acero para estampado en caliente a través de VAMA."], ["Energía y maquinaria", "", [], "Placa gruesa y tubo sin costura para petróleo y gas."]]},
+  sail: {"nota": "Sectores atendidos.", "seg": [["Ferrocarril", "", ["Indian Railways"], "Riel, ruedas y ejes."], ["Construcción e infraestructura", "", [], "Estructurales, varilla y placa."]]},
+  hyundai: {"nota": "Hyundai Motor y Kia constan como compradores en los anuncios de la planta de Luisiana.", "seg": [["Automotriz", "", ["Hyundai Motor", "Kia"], "Lámina para las plantas del grupo en Corea y Estados Unidos."], ["Construcción y naval", "", [], "Perfiles H, varilla y placa."]]},
   mineras: { nota: 'El mineral se vende a acereras con alto horno.', seg: [
     ['Acereras de Asia', '', ['China Baowu', 'Nippon Steel', 'POSCO'], 'China compra cerca de tres cuartas partes del mineral que se mueve por mar.'],
     ['Acereras de Europa y América', '', ['ArcelorMittal'], 'Pélet y mineral de alta ley.']] }

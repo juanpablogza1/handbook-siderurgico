@@ -82,7 +82,7 @@
         var col = REG[PAIS[r[2]] || 'eu'][1], w = Math.max(2, 100 * r[3] / max).toFixed(1);
         var in_ = '<span class="n">' + r[0] + '</span><span class="g"><span class="t">' + esc(r[1]) + '</span><i><i style="width:' + w + '%;background:' + col + '"></i></i></span><span class="v">' + r[3].toFixed(1) + '</span>';
         return r[4] ? '<a href="#/industria/' + r[4] + '">' + in_ + '</a>' : '<div>' + in_ + '</div>';
-      }).join('') + '</div><p class="small">Las empresas en blanco tienen ficha: tócalas para abrirla.</p>' +
+      }).join('') + '</div><p class="small">Toca una empresa para abrir su ficha.</p>' +
       '<h3>México y Grupo Techint</h3><ul class="rows">' + emp('mx').map(function (e) { return fila('#/industria/' + e.id, e.n, (e.res || '') + (rutas(e).length ? '<span class="iv-r">' + puntos(e) + '</span>' : '')); }).join('') + '</ul>' +
       '<h3>Globales sin cifra propia en el ranking</h3><ul class="rows">' + emp('gl').filter(function (e) { return !mt(e.id); }).map(function (e) { return fila('#/industria/' + e.id, e.n, e.res); }).join('') + '</ul>' + cadena() + nota();
   }
@@ -126,7 +126,7 @@
     }).join('');
     return '<p class="lead" style="margin-bottom:8px">Los 25 mayores productores de 2025. El área de cada bloque es su producción en Mt.</p>' +
       '<div class="iv-tm">' + cells + '</div>' +
-      '<div class="iv-leg" style="margin-top:10px">' + Object.keys(REG).map(function (k) { return '<span><i style="background:' + REG[k][1] + '"></i>' + REG[k][0] + '</span>'; }).join('') + '<span><i style="background:#55646f"></i>Sin ficha</span></div>' +
+      '<div class="iv-leg" style="margin-top:10px">' + Object.keys(REG).map(function (k) { return '<span><i style="background:' + REG[k][1] + '"></i>' + REG[k][0] + '</span>'; }).join('') + (rs.some(function (r) { return !r[4]; }) ? '<span><i style="background:#55646f"></i>Sin ficha</span>' : '') + '</div>' +
       hero(true) + accesos() +
       '<h3>México y Grupo Techint</h3><div class="iv-grid">' + emp('mx').map(tarjetaMx).join('') + '</div>' +
       '<h3>Globales sin cifra propia en el ranking</h3><ul class="rows">' + emp('gl').filter(function (e) { return !mt(e.id); }).map(function (e) { return fila('#/industria/' + e.id, e.n, e.res); }).join('') + '</ul>' + cadena() + nota();

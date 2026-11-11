@@ -335,3 +335,16 @@ a.pl p i{font-style:normal;color:var(--mut)}
 .iv-tm b{font:750 12px/1.1 var(--body);white-space:nowrap}
 .iv-tm b.v{writing-mode:vertical-rl;transform:rotate(180deg);align-self:center;margin:auto 0 0}
 .iv-tm em{font:800 15px/1 var(--cond);font-style:normal;margin-top:2px}
+
+/* Minas en el mapa */
+.mley i.m,.msw i.m{width:9px;height:9px;background:#ffc53d;transform:rotate(45deg);border-radius:1px;display:inline-block;flex:none}
+.mley{gap:10px}
+.msw{display:flex;align-items:center;gap:10px;margin:12px 0 10px;padding:10px 12px;background:var(--s1);border-radius:12px;font:600 14.5px/1.2 var(--body)}
+.msw>span{display:flex;align-items:center;gap:9px;flex:1}
+.msw input{position:absolute;opacity:0;width:1px;height:1px}
+.msw b{position:relative;width:46px;height:28px;border-radius:14px;background:var(--s2);border:1px solid var(--line);flex:none;transition:background .15s}
+.msw b::after{content:"";position:absolute;left:2px;top:2px;width:22px;height:22px;border-radius:50%;background:var(--mut);transition:transform .15s,background .15s}
+.msw input:checked+b{background:#ffc53d;border-color:#ffc53d}
+.msw input:checked+b::after{transform:translateX(18px);background:#1b232b}
+.msw input:focus-visible+b{outline:2px solid var(--t1200);outline-offset:2px}
+.mcard.mina{border-left-color:#ffc53d}
