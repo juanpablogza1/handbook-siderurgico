@@ -45,6 +45,7 @@
     S.grados.forEach(function (g) { if (hit(g.n + ' ' + g.std + ' ' + g.fam + ' ' + g.u)) out.push(['#/quimica/grados/' + g.id, g.n, g.fam, 'Grado']); });
     S.elementos.forEach(function (e) { if (hit(e.n + ' ' + e.res) || S.norm(e.s) === t) out.push(['#/quimica/elementos/' + e.s, e.n + ' (' + e.s + ')', e.res, 'Elemento']); });
     S.empresas.forEach(function (e) { var pl = (S.plantas && S.plantas[e.id] || []).map(function (p) { return typeof p === 'string' ? p : p.join(' '); }).join(' '); var cs = S.clientes && S.clientes[e.id] ? S.clientes[e.id].seg.map(function (g) { return g[0] + ' ' + g[2].join(' '); }).join(' ') : ''; pl += ' ' + cs; if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' ') + ' ' + pl)) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
+    Object.keys(S.fab || {}).forEach(function (id) { var f = S.fab[id]; if (hit(f.join(' '))) out.push(['#/procesos/fabricantes/' + id, f[0], f[1], 'Fabricante']); });
     S.glosario.forEach(function (g) { if (hit(g[0] + ' ' + g[1])) out.push(['#/inicio/glosario', g[0], g[1], 'Glosario']); });
     return out.slice(0, 40);
   };
@@ -54,14 +55,15 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.4.</p>' +
-      '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.']) +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.5.</p>' +
+      '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
   }
 
   /* ================= Procesos ================= */
   V.procesos = function (p) {
+    if (p[0] === 'fabricantes') return p[1] && S.fab[p[1]] ? fabricante(p[1]) : fabricantes();
     if (p[0]) { var pr = find(S.procesos, p[0]); if (pr) return proceso(pr); }
     var h = '<p class="lead">La ruta completa. El color de la línea sigue la temperatura del acero en cada etapa.</p><ol class="ruta">';
     S.etapas.forEach(function (e) {
@@ -72,9 +74,40 @@
         h += '<li style="--c:' + c + '"><i class="nodo"></i><a href="#/procesos/' + x.id + '"><span class="tt">' + x.t + '<span class="temp">' + x.tt + '</span></span><span class="ss">' + x.r + '</span></a></li>';
       });
     });
-    return { title: 'Procesos', html: h + '</ol>' };
+    return { title: 'Procesos', html: h + '</ol><ul class="rows" style="margin-top:18px">' + row('#/procesos/fabricantes', 'Fabricantes de equipo', 'Quién construye cada equipo y dónde lo fabrica', Object.keys(S.fab).length) + '</ul>' };
   };
 
+  function fabDonde(f) { return f[2] === '=' ? 'En su sede' : f[2]; }
+  function equipos(pid) {
+    var es = S.equipos && S.equipos[pid]; if (!es) return '';
+    return '<h3>Quién fabrica el equipo</h3><p class="small" style="margin:-4px 0 10px">Los fabricantes más comunes. Toca un equipo para ver dónde lo hacen.</p>' +
+      es.map(function (e) {
+        var fs = e[1].filter(function (id) { return S.fab[id]; });
+        return '<details class="sub eq"><summary><span class="st"><b>' + e[0] + '</b><small>' + fs.map(function (id) { return S.fab[id][0].split(' (')[0].split(':')[0]; }).join(' · ') + '</small></span></summary><div class="in">' +
+          (e[2] ? '<p class="eqn">' + e[2] + '</p>' : '') +
+          fs.map(function (id) {
+            var f = S.fab[id], d = fabDonde(f);
+            return '<a class="pl" href="#/procesos/fabricantes/' + id + '"><b>' + f[0] + '</b><span class="u">Sede: ' + f[1] + '</span>' + (d ? '<p><i>Fabrica en:</i> ' + d + '</p>' : '') + '</a>';
+          }).join('') + '</div></details>';
+      }).join('') +
+      '<ul class="rows" style="margin-top:4px">' + row('#/procesos/fabricantes', 'Todos los fabricantes', 'Directorio por número de equipos que suministran') + '</ul>';
+  }
+  function fabricantes() {
+    var ids = Object.keys(S.fab).sort(function (a, b) { return (S.fabUso[b] || []).length - (S.fabUso[a] || []).length || S.fab[a][0].localeCompare(S.fab[b][0], 'es'); });
+    var INT = ['sms', 'primetals', 'danieli', 'tenova', 'fives', 'andritz', 'jc', 'nse', 'plantech', 'mcc'], big = ids.filter(function (id) { return INT.indexOf(id) >= 0; }), rest = ids.filter(function (id) { return big.indexOf(id) < 0; });
+    function lst(a) { return '<ul class="rows">' + a.map(function (id) { var n = (S.fabUso[id] || []).length; return row('#/procesos/fabricantes/' + id, S.fab[id][0], S.fab[id][1], n + (n === 1 ? ' equipo' : ' equipos')); }).join('') + '</ul>'; }
+    return { title: 'Fabricantes de equipo', html: '<p class="lead">Quién construye el equipo de una siderúrgica y dónde lo fabrica. Ordenados por el número de equipos de esta app en los que aparecen.</p>' +
+      '<h3>Proveedores de planta completa</h3>' + lst(big) + '<h3>Especialistas</h3>' + lst(rest) +
+      '<p class="small" style="margin-top:14px">Lista no exhaustiva. Datos a ' + S.fabCorte + '; los talleres y los dueños cambian.</p>' };
+  }
+  function fabricante(id) {
+    var f = S.fab[id], uso = S.fabUso[id] || [], d = fabDonde(f), by = {}, ord = [];
+    uso.forEach(function (u) { if (!by[u[0]]) { by[u[0]] = []; ord.push(u[0]); } by[u[0]].push(u[1]); });
+    return { title: f[0], html: '<h2>' + f[0] + '</h2><p class="lead" style="margin-bottom:10px">' + f[3] + '</p>' +
+      '<div class="tiles one"><div><b>Sede</b><span>' + f[1] + '</span></div>' + (d ? '<div><b>Fabrica en</b><span>' + d + '</span></div>' : '') + '</div>' +
+      (ord.length ? '<h3>Qué suministra</h3><ul class="rows">' + ord.map(function (pid) { var pr = find(S.procesos, pid); return row('#/procesos/' + pid, pr.t, by[pid].join(' · ')); }).join('') + '</ul>' : '') +
+      '<p class="small" style="margin-top:14px">Datos a ' + S.fabCorte + '.</p>' };
+  }
   function proceso(p) {
     var i = S.procesos.indexOf(p), prev = S.procesos[i - 1], next = S.procesos[i + 1];
     var et = find(S.etapas, p.et);
@@ -85,6 +118,7 @@
       (p.par ? '<h3>Parámetros típicos</h3>' + S.kv(p.par) : '') +
       (p.rx ? '<h3>Reacciones</h3>' + p.rx.map(function (x) { return '<div class="rx">' + x + '</div>'; }).join('') : '') +
       sec('Puntos clave', p.cl) +
+      equipos(p.id) +
       '<ul class="rows" style="margin-top:22px">' +
       (prev ? row('#/procesos/' + prev.id, prev.t, 'Proceso anterior') : '') + (next ? row('#/procesos/' + next.id, next.t, 'Proceso siguiente') : '') + '</ul>';
     return { title: p.t, html: h, after: S.mountAnim };
