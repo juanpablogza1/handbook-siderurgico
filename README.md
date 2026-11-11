@@ -9,7 +9,7 @@ Manual de bolsillo de la industria del acero. Aplicación web instalable (PWA), 
 | **Procesos** | 21 procesos animados, de la mina al producto terminado: minería, peletizado, coque, alto horno, reducción directa, BOF, horno eléctrico, metalurgia secundaria, colada continua, laminación en caliente y en frío, largos, decapado, recocido, galvanizado, pintado, hojalata, tubería con y sin costura, rolado de perfiles y trefilado. Cada uno con entradas, salidas, pasos, parámetros típicos, reacciones y puntos clave. |
 | **Química** | Simulador de composición, diagrama hierro-carbono interactivo, 20 elementos y su efecto, microestructuras, tratamientos térmicos, propiedades, familias de aceros y 63 grados con química, propiedades y usos. |
 | **Normas** | 68 normas explicadas (ASTM, SAE, API, ASME, AWS, EN, JIS, NMX, ISO, GB) con grados, resistencias, usos y equivalencias; guía completa de grados de galvanizado (calidades, estructurales, pesos de capa, equivalencias) y de designaciones, calibres y varilla. |
-| **Industria** | Panorama mundial y de México, ranking worldsteel 2025 y perfiles de 27 empresas y grupos: plantas (dónde están y qué hace cada una), historia, líderes, accionistas y especialización. |
+| **Industria** | Panorama mundial y de México, ranking worldsteel 2025 y perfiles de 27 empresas y grupos: resumen de una pantalla, plantas (dónde están y qué hace cada una), principales clientes por segmento, historia, líderes, accionistas y especialización. |
 | **Inicio** | Buscador global y glosario. |
 
 ### Simulador
@@ -48,10 +48,20 @@ icons/                  Iconos
 
 Sin dependencias ni paso de compilación: HTML, CSS y JavaScript planos.
 
+## Logotipos
+
+La app está preparada para mostrar el logotipo de cada empresa y de sus clientes, pero el repositorio no los incluye: son marcas registradas de terceros. Para agregarlos:
+
+1. Guarda los archivos oficiales en `logos-originales/` con los nombres de `icons/logos/LEEME.md`.
+2. Ejecuta `python3 tools/logos.py`: quita el fondo, recorta márgenes, ajusta el tamaño y registra cada archivo.
+3. Sube los cambios.
+
+Si falta un logotipo, la app muestra solo el nombre.
+
 ## Actualizar contenido
 
 - Edita el archivo `js/data-*.js` que corresponda.
-- Sube el valor de `VERSION` en `sw.js` para que los teléfonos descarguen la versión nueva.
+- Sube el valor de `VERSION` en `sw.js` y el `?v=` de `index.html` para que los teléfonos descarguen la versión nueva.
 
 Probar en local:
 

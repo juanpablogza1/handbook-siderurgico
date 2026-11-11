@@ -4,7 +4,7 @@
 S.plantas = {
   ternium: [
     'México',
-    ['Centro Industrial Ternium', 'Pesquería, Nuevo León', 'Laminador en caliente de 4.4 Mt, decapado y laminación en frío, galvanizado (incluye Tenigal, con Nippon Steel), pintado y centro de acabado. Enfoque automotriz. En construcción: acería eléctrica con módulo de reducción directa para 2.6 Mt de planchón, con arranque previsto para 2027, más nuevo laminador en frío y galvanizado.'],
+    ['Centro Industrial Ternium', 'Pesquería, Nuevo León', 'Laminador en caliente de 4.4 Mt, decapado y laminación en frío, galvanizado (incluye Tenigal, con Nippon Steel), pintado y centro de acabado. El segundo laminador en frío y la segunda línea de galvanizado arrancaron en febrero de 2026. Enfoque automotriz. En construcción: acería eléctrica con módulo de reducción directa para 2.6 Mt de planchón, con arranque previsto entre fines de 2026 e inicios de 2027.'],
     ['Planta Guerrero', 'San Nicolás de los Garza, Nuevo León', 'Reducción directa HYL, acería eléctrica y laminación en caliente de planchón delgado; decapado, laminación en frío y tubería con costura. Unos 2.4 Mt de acero crudo al año.'],
     ['Planta Churubusco', 'Monterrey, Nuevo León', 'Laminación en caliente a partir de planchón, decapado y laminación en frío. Incluye centro de servicio.'],
     ['Planta Universidad', 'San Nicolás de los Garza, Nuevo León', 'Galvanizado y aceros recubiertos para construcción e industria.'],

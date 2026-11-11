@@ -10,6 +10,13 @@ S.esc = function (s) {
 S.norm = function (s) {
   return String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 };
+S.slug = function (s) { return S.norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); };
+/* Devuelve la imagen del logotipo si existe en icons/logos/; si no, cadena vacía (nunca un recuadro vacío). */
+S.logo = function (name, cls) {
+  var k = S.slug(name), d = S.logos && S.logos[k];
+  if (!d) return '';
+  return '<span class="lg ' + (cls || '') + '"><img src="icons/logos/' + k + '.png" width="' + d[0] + '" height="' + d[1] + '" alt="' + S.esc(name) + '" loading="lazy"></span>';
+};
 S.ul = function (arr) {
   return '<ul class="b">' + arr.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>';
 };

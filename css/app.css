@@ -214,3 +214,26 @@ html.rot-r #app{transform:translateX(var(--ph)) rotate(90deg)}
 html.rot-l{--sat:env(safe-area-inset-left,0px);--sab:14px}
 html.rot-r{--sat:env(safe-area-inset-right,0px);--sab:14px}
 html.rot,html.rot body{height:100%;min-height:0}
+
+/* clientes por segmento */
+.sg{padding:12px 0 13px;border-top:1px solid var(--line)}
+.sg:first-child{border-top:0;padding-top:2px}
+.sgh{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sgh b{font:700 16px/1.25 var(--body)}
+.sgh span{font:700 13px/1 var(--body);color:var(--t1200);white-space:nowrap}
+.sg p{margin:7px 0 0;font-size:14.5px;line-height:1.45;color:#cdd6dc}
+.cls{display:grid;grid-template-columns:1fr 1fr;column-gap:14px;margin:8px 0 2px}
+.cl{display:flex;align-items:center;gap:9px;min-height:38px;padding:6px 0;border-bottom:1px solid var(--line);font:650 14.5px/1.25 var(--body)}
+.cl.has{flex-direction:column;align-items:flex-start;gap:5px;padding:9px 0}
+.cl.has span:last-child{font:500 12px/1.2 var(--body);color:var(--mut)}
+
+/* logotipos: solo aparecen si el archivo existe. Placa clara para que contrasten sobre fondo oscuro. */
+.lg{display:inline-flex;align-items:center;justify-content:center;background:#f4f6f7;border-radius:8px;flex:none}
+.lg img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.lg.row{width:52px;height:38px;padding:5px}
+.eh{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.eh h2{margin-bottom:6px;min-width:0}
+.lg.emp{height:36px;max-width:120px;padding:6px 10px;margin:0 0 6px}
+.lg.emp img{max-height:24px;max-width:100px}
+.lg.cli{height:36px;max-width:100%;padding:6px 10px}
+.lg.cli img{max-height:24px;max-width:118px}

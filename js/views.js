@@ -2,8 +2,8 @@
 (function () {
   var V = S.views, esc = S.esc;
   function find(arr, id) { for (var i = 0; i < arr.length; i++) if (arr[i].id === id) return arr[i]; return null; }
-  function row(href, tt, ss, rt) {
-    return '<li><a href="' + href + '"><span class="gr"><span class="tt">' + tt + '</span>' + (ss ? '<span class="ss">' + ss + '</span>' : '') + '</span>' + (rt ? '<span class="rt">' + rt + '</span>' : '') + '<i class="chev"></i></a></li>';
+  function row(href, tt, ss, rt, pre) {
+    return '<li><a href="' + href + '">' + (pre || '') + '<span class="gr"><span class="tt">' + tt + '</span>' + (ss ? '<span class="ss">' + ss + '</span>' : '') + '</span>' + (rt ? '<span class="rt">' + rt + '</span>' : '') + '<i class="chev"></i></a></li>';
   }
   function sec(t, items) { return items && items.length ? '<h3>' + t + '</h3>' + S.ul(items) : ''; }
 
@@ -44,7 +44,7 @@
     S.normas.forEach(function (n) { if (hit(n.org + ' ' + n.cod + ' ' + n.t + ' ' + n.usos + ' ' + (n.eq || '') + ' ' + n.gr.map(function (g) { return g[0]; }).join(' '))) out.push(['#/normas/' + n.id, n.org + ' ' + n.cod, n.t, 'Norma']); });
     S.grados.forEach(function (g) { if (hit(g.n + ' ' + g.std + ' ' + g.fam + ' ' + g.u)) out.push(['#/quimica/grados/' + g.id, g.n, g.fam, 'Grado']); });
     S.elementos.forEach(function (e) { if (hit(e.n + ' ' + e.res) || S.norm(e.s) === t) out.push(['#/quimica/elementos/' + e.s, e.n + ' (' + e.s + ')', e.res, 'Elemento']); });
-    S.empresas.forEach(function (e) { var pl = (S.plantas && S.plantas[e.id] || []).map(function (p) { return typeof p === 'string' ? p : p.join(' '); }).join(' '); if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' ') + ' ' + pl)) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
+    S.empresas.forEach(function (e) { var pl = (S.plantas && S.plantas[e.id] || []).map(function (p) { return typeof p === 'string' ? p : p.join(' '); }).join(' '); var cs = S.clientes && S.clientes[e.id] ? S.clientes[e.id].seg.map(function (g) { return g[0] + ' ' + g[2].join(' '); }).join(' ') : ''; pl += ' ' + cs; if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' ') + ' ' + pl)) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
     S.glosario.forEach(function (g) { if (hit(g[0] + ' ' + g[1])) out.push(['#/inicio/glosario', g[0], g[1], 'Glosario']); });
     return out.slice(0, 40);
   };
@@ -54,7 +54,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.3.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.4.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -198,7 +198,7 @@
     if (p[0] === 'panorama') return panorama();
     if (p[0]) { var e = find(S.empresas, p[0]); if (e) return empresa(e); }
     function grupo(t, reg) {
-      return '<h3>' + t + '</h3><ul class="rows">' + S.empresas.filter(function (e) { return e.reg === reg; }).map(function (e) { return row('#/industria/' + e.id, e.n, e.res, e.prod && /^\d/.test(e.prod) ? e.prod.split(' (')[0] : ''); }).join('') + '</ul>';
+      return '<h3>' + t + '</h3><ul class="rows">' + S.empresas.filter(function (e) { return e.reg === reg; }).map(function (e) { return row('#/industria/' + e.id, e.n, e.res, e.prod && /^\d/.test(e.prod) ? e.prod.split(' (')[0] : '', S.logo(e.id, 'row')); }).join('') + '</ul>';
     }
     var h = '<p class="lead">En 2025 el mundo produjo 1 849 millones de toneladas de acero crudo. Más de la mitad, en China.</p><ul class="rows">' +
       row('#/industria/panorama', 'Panorama y mercado', 'Cifras mundiales, México, aranceles y descarbonización') +
@@ -270,18 +270,31 @@
   function acc(t, count, body, open) {
     return '<details class="acc"' + (open ? ' open' : '') + '><summary><span class="st">' + t + '</span>' + (count ? '<span class="ct">' + count + '</span>' : '') + '</summary><div class="in">' + body + '</div></details>';
   }
+  function clientes(id) {
+    var c = S.clientes && S.clientes[id]; if (!c) return null;
+    var n = 0;
+    var h = c.seg.map(function (g) {
+      n += g[2].length;
+      var names = g[2].length ? '<div class="cls">' + g[2].map(function (x) {
+        var lg = S.logo(x, 'cli');
+        return '<div class="cl' + (lg ? ' has' : '') + '">' + lg + '<span>' + x + '</span></div>';
+      }).join('') + '</div>' : '';
+      return '<div class="sg"><div class="sgh"><b>' + g[0] + '</b>' + (g[1] ? '<span>' + g[1] + ' de ventas</span>' : '') + '</div>' + names + '<p>' + g[3] + '</p></div>';
+    }).join('');
+    return { n: n, html: h + '<p class="small" style="margin:12px 0 4px">' + c.nota + '</p>' };
+  }
   function empresa(e) {
-    var r = (S.resumen && S.resumen[e.id]) || [], pl = plantas(e.id);
+    var r = (S.resumen && S.resumen[e.id]) || [], pl = plantas(e.id), cli = clientes(e.id);
     var lab = ['Sede', 'Fundada', 'Acero crudo 2025', 'Ruta', 'Dirige', 'Controla'];
     var tiles = lab.map(function (l, i) { return r[i] ? '<div><b>' + l + '</b><span>' + r[i] + '</span></div>' : ''; }).join('');
     var secs = [];
     if (pl) secs.push(['Plantas y qué hace cada una', pl.n, pl.html]);
+    if (cli) secs.push(['Principales clientes', cli.n || '', cli.html]);
     if (e.hist.length) secs.push(['Historia', e.hist.length, linea(e.hist)]);
-    if (e.lid.length) secs.push(['Líderes', '', S.ul(e.lid)]);
-    if (e.acc.length) secs.push(['Accionistas', '', S.ul(e.acc)]);
+    if (e.lid.length || e.acc.length) secs.push(['Líderes y accionistas', '', (e.lid.length ? '<h4 class="plg" style="margin-top:2px">Quién dirige</h4>' + S.ul(e.lid) : '') + (e.acc.length ? '<h4 class="plg">Quién es dueño</h4>' + S.ul(e.acc) : '')]);
     if (e.esp.length) secs.push([e.reg === 'ca' || e.id === 'otros-mx' ? 'Quiénes son' : 'Especialización', e.esp.length, S.ul(e.esp)]);
     if (e.hoy.length) secs.push(['Hoy', '', S.ul(e.hoy)]);
-    var h = '<h2>' + e.n + '</h2><p class="lead" style="margin-bottom:10px">' + e.res + '</p>' + (tiles ? '<div class="tiles">' + tiles + '</div>' : '') +
+    var h = '<div class="eh"><h2>' + e.n + '</h2>' + S.logo(e.id, 'emp') + '</div><p class="lead" style="margin-bottom:10px">' + e.res + '</p>' + (tiles ? '<div class="tiles">' + tiles + '</div>' : '') +
       '<div class="accs">' + secs.map(function (x) { return acc(x[0], x[1], x[2], secs.length === 1); }).join('') + '</div>' +
       '<p class="small" style="margin-top:14px">Toca una sección para abrirla. Datos a ' + S.ind.corte + '.</p>';
     return { title: e.n, html: h, after: function (root) {
