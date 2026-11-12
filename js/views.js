@@ -16,13 +16,9 @@
       '<div class="escala" aria-hidden="true"></div><div class="escala-n"><span>Ambiente</span><span>700 °C</span><span>1 000</span><span>1 250</span><span>1 550 °C</span></div>' +
       '<input class="search" id="q" type="search" placeholder="Buscar proceso, norma, grado o empresa" autocomplete="off" aria-label="Buscar"></div>' +
       '<div id="res"></div><div id="home">' +
-      '<ul class="rows" style="margin-top:14px">' +
-      row('#/procesos', 'Procesos', S.procesos.length + ' procesos animados, de la mina al perfil') +
-      row('#/quimica/simulador', 'Simulador de aceros', 'Combina elementos y descubre qué acero estás haciendo') +
-      row('#/quimica', 'Química del acero', 'Elementos, diagrama hierro-carbono, tratamientos y familias') +
-      row('#/normas', 'Normas y usos', S.normas.length + ' normas explicadas: ASTM, API, EN, JIS, NMX') +
-      row('#/industria', 'Industria', 'Quién produce el acero: historia, líderes y accionistas') +
-      row('#/inicio/glosario', 'Glosario', 'Los términos de la planta y del mercado') +
+      S.inicioTablero() +
+      '<ul class="rows" style="margin-top:18px">' +
+      row('#/inicio/glosario', 'Glosario', 'Los términos de la planta y del mercado', S.glosario.length) +
       row('#/inicio/acerca', 'Acerca de esta app', 'Fuentes, alcance y uso sin conexión') +
       '</ul>' + S.installBox() + '</div>';
     return { title: 'Siderúrgica', html: h, after: function (root) {
@@ -56,7 +52,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.11.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.12.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.', 'El mapa ubica una selección de acerías y minas de hierro de forma aproximada, con capacidades nominales. Base cartográfica: Natural Earth.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -66,16 +62,7 @@
   V.procesos = function (p) {
     if (p[0] === 'fabricantes') return p[1] && S.fab[p[1]] ? fabricante(p[1]) : fabricantes();
     if (p[0]) { var pr = find(S.procesos, p[0]); if (pr) return proceso(pr); }
-    var h = '<p class="lead">La ruta completa. El color de la línea sigue la temperatura del acero en cada etapa.</p><ol class="ruta">';
-    S.etapas.forEach(function (e) {
-      var ps = S.procesos.filter(function (x) { return x.et === e.id; });
-      h += '<li class="et" style="--c:' + S.tempColor(ps[0].temp) + '">' + e.t + '</li>';
-      ps.forEach(function (x) {
-        var c = S.tempColor(x.temp);
-        h += '<li style="--c:' + c + '"><i class="nodo"></i><a href="#/procesos/' + x.id + '"><span class="tt">' + x.t + '<span class="temp">' + x.tt + '</span></span><span class="ss">' + x.r + '</span></a></li>';
-      });
-    });
-    return { title: 'Procesos', html: h + '</ol><ul class="rows" style="margin-top:18px">' + row('#/procesos/fabricantes', 'Fabricantes de equipo', 'Quién construye cada equipo y dónde lo fabrica', Object.keys(S.fab).length) + '</ul>' };
+    return S.procesosHome();
   };
 
   function fabDonde(f) { return f[2] === '=' ? 'En su sede' : f[2]; }

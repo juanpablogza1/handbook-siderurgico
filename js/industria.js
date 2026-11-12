@@ -31,6 +31,7 @@
       '<path d="' + (S.mapaMini || '') + '" fill="#3b4b58" stroke="#141b22" stroke-width="1" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>' +
       S.acerias.map(function (a) { return '<circle cx="' + ((a[4] + 180) * 10).toFixed(0) + '" cy="' + my(a[3]).toFixed(0) + '" r="' + (a[6] >= 8 ? 26 : 18) + '" fill="#ff3b30" stroke="#2a0806" stroke-width="5"/>'; }).join('') + '</svg>';
   }
+  S.miniMapa = miniMapa;
   function reparto() {
     var resto = MUNDO.total, ps = MUNDO.partes.slice();
     ps.forEach(function (p) { resto -= p[1]; }); ps.push(['Resto del mundo', resto, '#55646f']);

@@ -454,3 +454,23 @@ a.og-n b{text-decoration:underline;text-decoration-color:var(--dim);text-underli
 
 /* Con la página como desplazador, lo que se lleva a la vista no debe quedar bajo la barra superior fija */
 html:not(.rot) details.acc,html:not(.rot) .mapa{scroll-margin-top:calc(var(--bar-h,60px) + 6px)}
+
+/* Portadas de Inicio y Procesos */
+.po-fl{padding:8px 4px 0}
+.po-fl .iv-hl{padding:8px 12px 12px}
+.po-svg text.nm{font-size:10.5px;font-weight:700;fill:var(--tx)}
+.po-svg text.tp{font-size:9.5px;font-weight:650}
+.po-fl a:active rect{fill-opacity:.4}
+.po-bal{display:grid;gap:4px;margin-top:8px}
+.po-bal small{font:600 10.5px/1 var(--body);color:var(--dim);margin-top:3px}
+.po-bal span{display:flex;justify-content:space-between;gap:4px;font:600 11px/1.15 var(--body);color:var(--mut)}
+.po-bal em{font-style:normal;color:var(--tx);font-weight:700}
+.po-bal i{display:block;height:6px;border-radius:3px;margin-top:2px}
+.po-ini{margin-top:16px}
+.po-ini .iv-hm{padding:10px 8px 0}
+.po-mel{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:10px}
+.po-mel i{font:800 15px/1 var(--cond);font-style:normal;color:var(--c);text-align:center;padding:6px 0 5px;border-radius:5px;background:var(--s2);border-top:2px solid var(--c)}
+.po-rep{margin-top:8px}
+.po-map{margin:8px -4px 0}
+.po-map svg{display:block;width:100%;height:auto}
+.po-hl b{color:var(--t1200)}

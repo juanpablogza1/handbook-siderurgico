@@ -44,15 +44,15 @@
       '<span class="iv-hl"><span class="po-hl"><b>Diagrama hierro-carbono</b><small>Interactivo: toca para ver la fase en cada punto</small></span><i class="chev"></i></span></a>';
   }
 
-  function tileSim() {
+  function tileSim(corto) {
     var g = find(S.grados, '4140'), c = g ? g.c : { C: 0.4, Mn: 0.85, Cr: 0.95, Mo: 0.2 };
     var ks = Object.keys(c).filter(function (k) { return k !== 'P' && k !== 'S'; }).sort(function (a, b) { return c[b] - c[a]; }).slice(0, 5);
     var max = c[ks[0]], col = {};
     S.elementos.forEach(function (e) { col[e.s] = S.grupos[e.g][1]; });
     return '<a class="iv-tile" href="#/quimica/simulador"><b>Simulador de aceros</b><div class="po-comp">' + ks.map(function (k) {
       return '<div><span>' + k + '</span><i><i style="width:' + Math.max(6, Math.round(100 * c[k] / max)) + '%;background:' + (col[k] || '#a3b2be') + '"></i></i><em>' + c[k] + '</em></div>';
-    }).join('') + '</div>' + (S.clasificar ? '<p class="po-res"><small>Resultado</small>' + esc(S.clasificar(c).fam) + '</p>' : '') +
-      '<span>' + (g ? esc(g.n) : 'SAE 4140') + ' de ejemplo. Ajusta la química y ve familia, soldabilidad y temple.</span></a>';
+    }).join('') + '</div>' + (corto ? '<span>Combina elementos y ve qué acero sale.</span></a>' : (S.clasificar ? '<p class="po-res"><small>Resultado</small>' + esc(S.clasificar(c).fam) + '</p>' : '') +
+      '<span>' + (g ? esc(g.n) : 'SAE 4140') + ' de ejemplo. Ajusta la química y ve familia, soldabilidad y temple.</span></a>');
   }
 
   var FAMS = [
@@ -227,5 +227,137 @@
       root.querySelector('#nf').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { S._nf = b.dataset.o; paint(S._nf); } });
       paint(S._nf || '');
     } };
+  };
+  /* ======================= Procesos ======================= */
+
+  function grados(t) { if (t == null) return 'Ambiente'; var s = String(t); return (t >= 1000 ? s.slice(0, -3) + ' ' + s.slice(-3) : s) + ' °C'; }
+  function colorP(p) { return p.temp == null ? '#7d8b97' : S.tempColor(p.temp); }
+
+  /* Diagrama de flujo de la ruta: [id, columna, fila, etiqueta, ancho] */
+  var FL = [
+    ['mineria', 1, 0, 'Minería'],
+    ['coque', 0, 1, 'Coque'], ['peletizado', 1, 1, 'Pélets y sínter'], ['*chatarra', 2, 1, 'Chatarra'],
+    ['alto-horno', 0, 2, 'Alto horno'], ['reduccion-directa', 1, 2, 'Reducción directa'],
+    ['bof', 0, 3, 'Convertidor BOF'], ['eaf', 2, 3, 'Horno eléctrico'],
+    ['metalurgia-secundaria', 1, 4, 'Metalurgia secundaria', 150],
+    ['colada-continua', 1, 5, 'Colada continua'],
+    ['laminacion-caliente', 0, 6, 'Lam. en caliente'], ['largos', 1, 6, 'Largos'], ['tubos-sin-costura', 2, 6, 'Tubo sin costura'],
+    ['decapado', 0, 7, 'Decapado'], ['trefilado', 1, 7, 'Trefilado'],
+    ['laminacion-frio', 0, 8, 'Lam. en frío'], ['tubos-erw', 2, 8, 'Tubo con costura'],
+    ['recocido', 0, 9, 'Recocido'], ['galvanizado', 1, 9, 'Galvanizado'], ['rolado', 2, 9, 'Rolado'],
+    ['hojalata', 0, 10, 'Hojalata'], ['pintado', 1, 10, 'Pintado']];
+  var ED = [['mineria', 'peletizado'], ['peletizado', 'alto-horno'], ['peletizado', 'reduccion-directa'], ['coque', 'alto-horno'], ['alto-horno', 'bof'],
+    ['reduccion-directa', 'eaf'], ['*chatarra', 'eaf'], ['bof', 'metalurgia-secundaria'], ['eaf', 'metalurgia-secundaria'], ['metalurgia-secundaria', 'colada-continua'],
+    ['colada-continua', 'laminacion-caliente'], ['colada-continua', 'largos'], ['colada-continua', 'tubos-sin-costura'], ['laminacion-caliente', 'decapado'],
+    ['largos', 'trefilado'], ['decapado', 'laminacion-frio'], ['laminacion-frio', 'tubos-erw'], ['laminacion-frio', 'recocido'], ['laminacion-frio', 'galvanizado'],
+    ['galvanizado', 'rolado'], ['recocido', 'hojalata'], ['galvanizado', 'pintado']];
+  function flujo() {
+    var CX = [59, 180, 301], W = 108, H = 34, PY = 52, Y0 = 21, nd = {}, g = '';
+    FL.forEach(function (f) { nd[f[0]] = { x: CX[f[1]], y: Y0 + f[2] * PY, w: f[4] || W, f: f }; });
+    g += '<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" fill="#6c7a86"/></marker></defs>';
+    ED.forEach(function (e) {
+      var a = nd[e[0]], b = nd[e[1]], d;
+      if (a.f[2] === b.f[2]) d = 'M' + (a.x + a.w / 2) + ' ' + a.y + 'H' + (b.x - b.w / 2 - 2);
+      else {
+        var y1 = a.y + H / 2, y2 = b.y - H / 2 - 2, m = (y1 + y2) / 2;
+        d = a.x === b.x ? 'M' + a.x + ' ' + y1 + 'V' + y2 : 'M' + a.x + ' ' + y1 + 'C' + a.x + ' ' + (m + 6) + ' ' + b.x + ' ' + (m - 6) + ' ' + b.x + ' ' + y2;
+      }
+      g += '<path d="' + d + '" fill="none" stroke="#6c7a86" stroke-width="1.5"' + (e[0][0] === '*' ? ' stroke-dasharray="4 3"' : '') + ' marker-end="url(#pfa)"/>';
+    });
+    FL.forEach(function (f) {
+      var n = nd[f[0]], x = n.x - n.w / 2, y = n.y - H / 2;
+      if (f[0][0] === '*') {
+        g += '<g><rect x="' + x + '" y="' + y + '" width="' + n.w + '" height="' + H + '" rx="17" fill="none" stroke="#7d8b97" stroke-dasharray="4 3"/>' +
+          '<text x="' + n.x + '" y="' + (n.y - 2) + '" text-anchor="middle" class="nm">' + f[3] + '</text><text x="' + n.x + '" y="' + (n.y + 10) + '" text-anchor="middle" class="tp" fill="#7d8b97">insumo reciclado</text></g>';
+        return;
+      }
+      var p = find(S.procesos, f[0]); if (!p) return;
+      var c = colorP(p);
+      g += '<a href="#/procesos/' + p.id + '" aria-label="' + esc(p.t) + '"><rect x="' + x + '" y="' + y + '" width="' + n.w + '" height="' + H + '" rx="7" fill="' + c + '" fill-opacity=".16" stroke="' + c + '" stroke-width="1.6"/>' +
+        '<text x="' + n.x + '" y="' + (n.y - 2) + '" text-anchor="middle" class="nm">' + f[3] + '</text><text x="' + n.x + '" y="' + (n.y + 10) + '" text-anchor="middle" class="tp" fill="' + c + '">' + grados(p.temp) + '</text></a>';
+    });
+    var alto = Y0 + 10 * PY + H / 2 + 6;
+    return '<div class="iv-hero po-fl"><svg class="po-svg" viewBox="0 0 360 ' + alto + '" role="img" aria-label="Diagrama de la ruta del mineral al producto">' + g + '</svg>' +
+      '<span class="iv-hl"><span class="po-hl"><b>Del mineral al producto</b><small>Toca un proceso para ver su animación. El color sigue la temperatura del acero.</small></span></span></div>';
+  }
+
+  /* Perfil térmico: una barra por proceso, agrupadas por etapa */
+  var ETC = { materias: 'Materias', hierro: 'Hierro', aceracion: 'Acería', colada: 'Colada', caliente: 'Caliente', frio: 'Frío', recubiertos: 'Recubiertos', formados: 'Formado' };
+  function perfil(mini) {
+    var X0 = mini ? 6 : 32, X1 = mini ? 354 : 354, Y0 = mini ? 74 : 150, Y1 = mini ? 6 : 14, T1 = 1700, GB = mini ? 3 : 3, GG = mini ? 8 : 9;
+    var grupos = S.etapas.map(function (e) { return { e: e, ps: S.procesos.filter(function (p) { return p.et === e.id; }) }; }).filter(function (x) { return x.ps.length; });
+    var n = S.procesos.length, bw = (X1 - X0 - (n - 1) * GB - (grupos.length - 1) * (GG - GB)) / n;
+    function y(t) { return Y0 - (Y0 - Y1) * t / T1; }
+    var g = '', x = X0;
+    if (!mini) {
+      [500, 1000, 1500].forEach(function (t) { g += '<path d="M' + X0 + ' ' + y(t).toFixed(1) + 'H' + X1 + '" stroke="#26313b"/><text x="' + (X0 - 4) + '" y="' + (y(t) + 3.5).toFixed(1) + '" text-anchor="end" class="ax">' + t + '</text>'; });
+      g += '<text x="' + (X0 - 4) + '" y="9" text-anchor="end" class="ax">°C</text>';
+    }
+    grupos.forEach(function (gr, gi) {
+      var x0 = x;
+      gr.ps.forEach(function (p) {
+        var t = p.temp == null ? 25 : p.temp, top = Math.min(y(t), Y0 - 3), bar = '<rect x="' + x.toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (Y0 - top).toFixed(1) + '" rx="2" fill="' + colorP(p) + '"/>';
+        g += mini ? bar : '<a href="#/procesos/' + p.id + '" aria-label="' + esc(p.t + ', ' + grados(p.temp)) + '"><rect x="' + (x - GB / 2).toFixed(1) + '" y="' + Y1 + '" width="' + (bw + GB).toFixed(1) + '" height="' + (Y0 - Y1) + '" fill="transparent"/>' + bar + '</a>';
+        x += bw + GB;
+      });
+      if (!mini) g += '<text x="' + ((x0 + x - GB) / 2).toFixed(1) + '" y="' + (Y0 + (gi % 2 ? 24 : 12)) + '" text-anchor="middle" class="ax">' + ETC[gr.e.id] + '</text>';
+      x += GG - GB;
+    });
+    g += '<path d="M' + X0 + ' ' + y(1538).toFixed(1) + 'H' + X1 + '" stroke="#fff3d6" stroke-opacity=".55" stroke-dasharray="4 3"/>';
+    if (!mini) g += '<text x="' + X1 + '" y="' + (y(1538) - 4).toFixed(1) + '" text-anchor="end" class="sm">Fusión del hierro 1 538 °C</text>';
+    return '<svg class="po-svg" viewBox="0 0 360 ' + (mini ? Y0 + 4 : Y0 + 30) + '" aria-hidden="' + (mini ? 'true' : 'false') + '">' + g + '</svg>';
+  }
+  function cardPerfil() {
+    return '<div class="po-card"><b class="po-ct">Perfil térmico de la ruta</b><p class="po-cs">El acero se funde una sola vez. Después se recalienta para laminarlo, sin fundirlo, y termina procesado en frío.</p>' +
+      perfil(false) + '<p class="small" style="margin:6px 0 0">Una barra por proceso, a su temperatura típica. Toca una barra para abrirlo.</p></div>';
+  }
+  function tileFab() {
+    var ids = Object.keys(S.fab).sort(function (a, b) { return (S.fabUso[b] || []).length - (S.fabUso[a] || []).length; }).slice(0, 5), max = (S.fabUso[ids[0]] || []).length || 1;
+    return '<a class="iv-tile" href="#/procesos/fabricantes"><b>Quién hace el equipo</b><div class="iv-mb">' + ids.map(function (id) {
+      var n = (S.fabUso[id] || []).length;
+      return '<div><span>' + esc(S.fab[id][0].split(' (')[0]) + '</span><i style="width:' + Math.round(100 * n / max) + '%;background:var(--acc)"></i></div>';
+    }).join('') + '</div><span>' + Object.keys(S.fab).length + ' fabricantes; equipos en que aparecen.</span></a>';
+  }
+  function tileBalance() {
+    var ent = [['Mineral y pélets', 1.6, '#b9d6e2'], ['Coque', 0.33, '#7d8b97']], sal = [['Arrabio', 1.0, S.tempColor(1500)], ['Escoria', 0.28, '#d9482b']], max = 1.6;
+    function bars(a) { return a.map(function (r) { return '<div><span>' + r[0] + ' <em>' + String(r[1]).replace('.', '.') + ' t</em></span><i style="width:' + Math.round(100 * r[1] / max) + '%;background:' + r[2] + '"></i></div>'; }).join(''); }
+    return '<a class="iv-tile" href="#/procesos/alto-horno"><b>Balance del alto horno</b><div class="po-bal"><small>Entra</small>' + bars(ent) + '<small>Sale</small>' + bars(sal) + '</div><span>Por tonelada de arrabio, más aire caliente y fundentes.</span></a>';
+  }
+  function ruta() {
+    var h = '<ol class="ruta">';
+    S.etapas.forEach(function (e) {
+      var ps = S.procesos.filter(function (x) { return x.et === e.id; }); if (!ps.length) return;
+      h += '<li class="et" style="--c:' + S.tempColor(ps[0].temp) + '">' + e.t + '</li>';
+      ps.forEach(function (x) {
+        var c = S.tempColor(x.temp);
+        h += '<li style="--c:' + c + '"><i class="nodo"></i><a href="#/procesos/' + x.id + '"><span class="tt">' + x.t + '<span class="temp">' + x.tt + '</span></span><span class="ss">' + x.r + '</span></a></li>';
+      });
+    });
+    return h + '</ol>';
+  }
+  S.procesosHome = function () {
+    var h = '<p class="lead">Dos rutas para hacer acero, una sola colada y tres familias de producto. ' + S.procesos.length + ' procesos, cada uno con su animación.</p>' +
+      flujo() + '<div class="iv-g2">' + tileBalance() + tileFab() + '</div>' + cardPerfil() +
+      '<h3>Todos los procesos</h3>' + ruta();
+    return { title: 'Procesos', html: h };
+  };
+
+  /* ======================= Inicio ======================= */
+
+  S.inicioTablero = function () {
+    var clave = ['C', 'Mn', 'Si', 'Cr', 'Ni', 'Mo', 'V', 'Nb', 'Ti', 'B'], col = {};
+    S.elementos.forEach(function (e) { col[e.s] = S.grupos[e.g][1]; });
+    var cnt = {}; S.normas.forEach(function (n) { cnt[n.org] = (cnt[n.org] || 0) + 1; });
+    var orgs = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; });
+    var procesos = '<a class="iv-hero po-ini" href="#/procesos"><span class="iv-hm">' + perfil(true) + '</span>' +
+      '<span class="iv-hl"><span class="po-hl"><b>' + S.procesos.length + ' procesos animados</b><small>Del mineral al producto. Cada barra es un proceso a su temperatura.</small></span><i class="chev"></i></span></a>';
+    var quimica = '<a class="iv-tile" href="#/quimica"><b>Química del acero</b><div class="po-mel">' + clave.map(function (s) { return '<i style="--c:' + (col[s] || '#a3b2be') + '">' + s + '</i>'; }).join('') + '</div>' +
+      '<span>' + S.elementos.length + ' elementos, diagrama Fe-C y ' + S.grados.length + ' grados.</span></a>';
+    var normas = '<a class="iv-tile" href="#/normas"><b>Normas y usos</b><strong class="po-big">' + S.normas.length + '</strong><div class="iv-rep po-rep">' + orgs.map(function (o) {
+      return '<i style="width:' + (100 * cnt[o] / S.normas.length).toFixed(1) + '%;background:' + ocol(o) + '"></i>'; }).join('') + '</div>' +
+      '<span>ASTM, NMX, EN, JIS, API y más.</span></a>';
+    var industria = '<a class="iv-tile" href="#/industria"><b>Industria</b><div class="po-map">' + (S.miniMapa ? S.miniMapa() : '') + '</div>' +
+      '<span>' + S.acerias.length + ' acerías, ' + S.empresas.length + ' empresas.</span></a>';
+    return procesos + '<div class="iv-g2">' + quimica + tileSim(true) + normas + industria + '</div>';
   };
 })();
