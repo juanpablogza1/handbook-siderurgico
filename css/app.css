@@ -371,3 +371,78 @@ a.og-n b{text-decoration:underline;text-decoration-color:var(--dim);text-underli
 .og-g .og-n:nth-child(odd)::after{content:"";position:absolute;right:-11px;top:-9px;height:calc(100% + 10px);border-right:2px solid var(--line)}
 .og-g .og-n:nth-child(odd):nth-last-child(-n+2)::after{height:31px}
 .og-x{margin:12px 0 2px}
+
+/* Portadas de Química y Normas */
+.po-svg{display:block;width:100%;height:auto;font-family:var(--body)}
+.po-svg text{font-size:11.5px;font-weight:650;fill:var(--tx)}
+.po-svg text.sm{font-size:10.5px;font-weight:600}
+.po-svg text.ax{font-size:9.5px;font-weight:500;fill:var(--dim)}
+.po-svg text.gr{font-size:10px;font-weight:700;fill:var(--t1200)}
+.po-svg text.bl{font-size:10.5px;font-weight:700;fill:var(--tx);paint-order:stroke;stroke:#1b232b;stroke-width:3px;stroke-linejoin:round}
+.po-hero .iv-hl b{color:var(--t1200)}
+.po-hero .iv-hm{padding:10px 8px 0}
+.po-comp{display:grid;gap:5px;margin-top:10px}
+.po-comp div{display:grid;grid-template-columns:22px 1fr 32px;align-items:center;gap:6px}
+.po-comp span{font:750 12px/1 var(--cond);color:var(--tx)}
+.po-comp i{display:block;height:7px;border-radius:3px;background:var(--s2);overflow:hidden}
+.po-comp i i{height:100%;border-radius:3px}
+.po-comp em{font:600 11px/1 var(--body);font-style:normal;color:var(--mut);text-align:right}
+.po-big{display:block;margin-top:4px;font:800 34px/1 var(--cond);color:var(--t1200)}
+.po-hist{display:grid;gap:4px;margin-top:8px}
+.po-hist div{display:grid;grid-template-columns:1fr auto;align-items:center;column-gap:6px}
+.po-hist span{font:600 11px/1.15 var(--body);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.po-hist em{grid-row:1/3;grid-column:2;font:700 11.5px var(--body);font-style:normal;color:var(--tx)}
+.po-hist i{display:block;height:5px;border-radius:3px;margin-top:2px}
+.po-el{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
+.po-el a{background:var(--s1);border-radius:8px;border-top:3px solid var(--c);padding:7px 2px 6px;text-align:center;color:inherit;text-decoration:none;min-width:0}
+.po-el b{display:block;font:800 21px/1.05 var(--cond);color:var(--c)}
+.po-el span{display:block;margin-top:2px;font:500 10px/1.15 var(--body);color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.po-card{background:var(--s1);border-radius:13px;padding:13px 12px 12px;margin-top:22px}
+.po-ct{display:block;font:700 18px/1.2 var(--cond);color:var(--t1200)}
+.po-cs{margin:4px 0 8px;font-size:13.5px;line-height:1.4;color:var(--mut)}
+.po-card .po-svg text.bl{stroke:#232d37}
+.po-ley{list-style:none;margin:8px 0 12px;padding:0;display:grid;gap:6px}
+.po-ley li{display:flex;gap:9px;align-items:baseline;font-size:13.5px;line-height:1.35;color:var(--mut)}
+.po-ley i{flex:none;width:16px;height:4px;border-radius:2px;transform:translateY(-3px)}
+.po-ley b{color:var(--tx);font-weight:650}
+.po-card .iv-pills a{background:var(--s2)}
+.po-eqw{padding:12px 16px 12px}
+.po-eqt b{display:block;font:700 18px/1.2 var(--cond);color:var(--t1200)}
+.po-eqt span{display:block;margin-top:3px;font-size:13px;line-height:1.35;color:var(--mut)}
+.po-eqh{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:12px 0 0 30px;text-align:center;font:750 13px/1 var(--body)}
+.po-eq{position:relative}
+.po-eq .po-gl{position:absolute;left:30px;right:0;border-top:1px solid #26313b}
+.po-eq em{position:absolute;left:0;width:25px;text-align:right;transform:translateY(-50%);font:500 10px/1 var(--body);font-style:normal;color:var(--dim)}
+.po-chip{position:absolute;transform:translateY(-50%);height:19px;display:flex;align-items:center;justify-content:center;margin-left:2.5px;border-radius:5px;background:#232d37;border:1px solid var(--line);border-left:3px solid var(--c);font:700 10.5px/1 var(--body);color:var(--tx);white-space:nowrap;overflow:hidden;text-decoration:none;letter-spacing:-.1px}
+.po-eqn{margin:8px 0 0;font-size:12.5px;line-height:1.35;color:var(--dim)}
+.po-des{display:flex;gap:3px;margin-top:10px;font:800 36px/1 var(--cond)}
+.po-des span{padding-bottom:3px;border-bottom:3px solid}
+.po-des .a{color:#6aa3d8;border-color:#6aa3d8}
+.po-des .b{color:var(--t1200);border-color:var(--t1200)}
+.po-desl{display:grid;gap:3px;margin-top:8px;font:500 11.5px/1.25 var(--body);color:var(--mut)}
+.po-desl span{display:flex;align-items:center;gap:6px}
+.po-desl i{flex:none;width:8px;height:8px;border-radius:2px}
+.po-desl i.a{background:#6aa3d8}
+.po-desl i.b{background:var(--t1200)}
+.po-capa{display:grid;gap:5px;margin-top:10px}
+.po-capa span{display:block;font:650 11px/1.1 var(--body);color:var(--mut)}
+.po-capa i{display:block;height:6px;border-radius:3px;margin-top:2px;background:linear-gradient(90deg,#8fa3b0,#d7e3ea)}
+.po-cats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.po-cats a{display:flex;align-items:center;gap:10px;background:var(--s1);border-radius:11px;padding:10px;color:inherit;text-decoration:none;min-width:0}
+.po-cats svg{flex:none;width:30px;height:30px;fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.po-cats svg text{fill:var(--acc);stroke:none;font:800 12px var(--cond)}
+.po-cats span{min-width:0}
+.po-cats b{display:block;font:650 13.5px/1.2 var(--body)}
+.po-cats em{display:block;margin-top:2px;font:500 12px/1.2 var(--body);font-style:normal;color:var(--mut)}
+.po-org{margin-top:0}
+.po-org>span{display:flex;align-items:center;gap:6px}
+.po-org>span .chev{margin-left:auto}
+.po-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+#nf .po-dot{margin-right:5px}
+
+.po-hl{display:flex;flex-direction:column;gap:2px;min-width:0}
+.po-hl b{font:700 17px/1.15 var(--cond)}
+.po-hl small{font:500 13px/1.3 var(--body);color:var(--mut)}
+.po-res{margin:12px 0 0;font:650 13px/1.3 var(--body);color:var(--t1200)}
+.po-res small{display:block;font:500 11px/1.2 var(--body);color:var(--dim);margin-bottom:2px}
+.po-eq .po-cut{position:absolute;left:30px;right:0;height:8px;transform:translateY(-50%);background:repeating-linear-gradient(-45deg,transparent 0 5px,#2c3945 5px 7px);border-radius:2px}

@@ -41,7 +41,7 @@
     var out = [];
     function hit(s) { return S.norm(s).indexOf(t) >= 0; }
     S.procesos.forEach(function (p) { if (hit(p.t + ' ' + p.r + ' ' + p.sal)) out.push(['#/procesos/' + p.id, p.t, p.r, 'Proceso']); });
-    S.normas.forEach(function (n) { if (hit(n.org + ' ' + n.cod + ' ' + n.t + ' ' + n.usos + ' ' + (n.eq || '') + ' ' + n.gr.map(function (g) { return g[0]; }).join(' '))) out.push(['#/normas/' + n.id, n.org + ' ' + n.cod, n.t, 'Norma']); });
+    S.normas.forEach(function (n) { if (hit(n.org + ' ' + n.cod + ' ' + n.t + ' ' + n.usos + ' ' + (n.eq || '') + ' ' + n.gr.map(function (g) { return g[0]; }).join(' '))) out.push(['#/normas/' + n.id, S.normaNombre(n), n.t, 'Norma']); });
     S.grados.forEach(function (g) { if (hit(g.n + ' ' + g.std + ' ' + g.fam + ' ' + g.u)) out.push(['#/quimica/grados/' + g.id, g.n, g.fam, 'Grado']); });
     S.elementos.forEach(function (e) { if (hit(e.n + ' ' + e.res) || S.norm(e.s) === t) out.push(['#/quimica/elementos/' + e.s, e.n + ' (' + e.s + ')', e.res, 'Elemento']); });
     S.empresas.forEach(function (e) { var pl = (S.plantas && S.plantas[e.id] || []).map(function (p) { return typeof p === 'string' ? p : p.join(' '); }).join(' '); var cs = S.clientes && S.clientes[e.id] ? S.clientes[e.id].seg.map(function (g) { return g[0] + ' ' + g[2].join(' '); }).join(' ') : ''; pl += ' ' + cs; if (hit(e.n + ' ' + e.res + ' ' + e.pais + ' ' + e.esp.join(' ') + ' ' + pl)) out.push(['#/industria/' + e.id, e.n, e.res, 'Empresa']); });
@@ -56,7 +56,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.9.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.10.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.', 'El mapa ubica una selección de acerías y minas de hierro de forma aproximada, con capacidades nominales. Base cartográfica: Natural Earth.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
@@ -136,16 +136,7 @@
     if (k === 'tratamientos') return lista('Tratamientos térmicos', 'Calentar y enfriar de forma controlada cambia la microestructura sin cambiar la química.', S.tratamientos);
     if (k === 'propiedades') return { title: 'Propiedades', html: '<p class="lead">Qué mide cada propiedad y por qué importa.</p>' + S.propiedades.map(function (x) { return '<h4>' + x[0] + '</h4><p>' + x[1] + '</p>'; }).join('') + '<h3>Cómo se endurece un acero</h3>' + S.ul(['<b>Solución sólida:</b> átomos de C, Mn, Si o P distorsionan la red.', '<b>Afino de grano:</b> el único mecanismo que sube resistencia y tenacidad a la vez.', '<b>Precipitación:</b> carbonitruros finos de Nb, V y Ti frenan las dislocaciones.', '<b>Deformación en frío:</b> más dislocaciones; se pierde ductilidad.', '<b>Transformación:</b> perlita, bainita o martensita según la velocidad de enfriamiento.']) };
     if (k === 'familias') return { title: 'Familias de aceros', html: '<p class="lead">Se conocen más de 3 500 grados. Casi todos caben en estas familias.</p>' + S.familias.map(function (f) { return '<h3>' + f.t + '</h3><p>' + f.d + '</p>' + S.ul(f.it); }).join('') };
-    var h = '<p class="lead">El acero es hierro con hasta 2.1 % de carbono. Décimas de punto de otros elementos, y el camino térmico, deciden si será una lata o un riel.</p><ul class="rows">' +
-      row('#/quimica/simulador', 'Simulador de aceros', 'Ajusta la composición: familia, grado parecido, soldabilidad y temple') +
-      row('#/quimica/diagrama', 'Diagrama hierro-carbono', 'Interactivo: fases según carbono y temperatura') +
-      row('#/quimica/elementos', 'Elementos', 'Qué hace cada uno de los ' + S.elementos.length + ' elementos en el acero') +
-      row('#/quimica/microestructuras', 'Microestructuras', 'Ferrita, perlita, bainita, martensita, austenita') +
-      row('#/quimica/tratamientos', 'Tratamientos térmicos', 'Recocido, normalizado, temple, revenido, cementación') +
-      row('#/quimica/propiedades', 'Propiedades', 'Límite elástico, tenacidad, valores n y r, templabilidad') +
-      row('#/quimica/familias', 'Familias de aceros', 'Carbono, HSLA, AHSS, aleados, inoxidables, herramienta') +
-      row('#/quimica/grados', 'Grados comunes', S.grados.length + ' grados con composición, propiedades y usos') + '</ul>';
-    return { title: 'Química del acero', html: h };
+    return S.quimicaHome();
   };
   function lista(t, lead, arr) {
     return { title: t, html: '<p class="lead">' + lead + '</p>' + arr.map(function (x) { return '<h3>' + x.t + '</h3><p>' + x.d + '</p><p class="small">' + x.p + '</p>'; }).join('') };
@@ -189,29 +180,13 @@
   V.normas = function (p) {
     if (p[0] === 'sistemas') return sistemas(p[1]);
     if (p[0] === 'organismos') return { title: 'Organismos', html: '<p class="lead">Quién emite las normas del acero.</p>' + S.orgs.map(function (o) { return '<h3>' + o.n + '</h3><p>' + o.d + '</p>'; }).join('') };
+    if (/^cat-\d+$/.test(p[0] || '')) { var ct = S.normasCategoria(+p[0].slice(4)); if (ct) return ct; }
     if (p[0]) { var n = find(S.normas, p[0]); if (n) return norma(n); }
-    var gi = 0; S.sistemas.forEach(function (s, k) { if (s.id === 'galv') gi = k; });
-    var h = '<p class="lead">Una norma fija qué debe cumplir el producto: química, propiedades, tolerancias y pruebas.</p>' +
-      '<ul class="rows">' + row('#/normas/sistemas/' + gi, 'Grados de galvanizado', 'Calidades, estructurales, pesos de capa G y Z, equivalencias, qué pedir') + row('#/normas/sistemas', 'Cómo leer una designación', 'SAE, ASTM, EN, JIS, calibres, recubrimientos, varilla') + row('#/normas/organismos', 'Organismos', 'ASTM, SAE, API, EN, JIS, NMX y otros') + '</ul>' +
-      '<div class="presets" id="nf" style="margin-top:16px"><button type="button" data-o="" class="on">Todas</button>' + ['ASTM', 'NMX', 'API', 'EN', 'JIS', 'SAE'].map(function (o) { return '<button type="button" data-o="' + o + '">' + o + '</button>'; }).join('') + '</div><div id="nl"></div>';
-    return { title: 'Normas y usos', html: h, after: function (root) {
-      function paint(o) {
-        var out = '';
-        S.normaCats.forEach(function (c) {
-          var ns = S.normas.filter(function (n) { return n.cat === c && (!o || n.org === o); });
-          if (ns.length) out += '<h3>' + c + '</h3><ul class="rows">' + ns.map(function (n) { return row('#/normas/' + n.id, n.org + ' ' + n.cod, n.t); }).join('') + '</ul>';
-        });
-        root.querySelector('#nl').innerHTML = out || '<p class="lead">Sin normas de ese organismo.</p>';
-        var bs = root.querySelectorAll('#nf button');
-        for (var i = 0; i < bs.length; i++) bs[i].style.borderColor = bs[i].dataset.o === o ? 'var(--t1200)' : '';
-      }
-      root.querySelector('#nf').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) { S._nf = b.dataset.o; paint(S._nf); } });
-      paint(S._nf || '');
-    } };
+    return S.normasHome();
   };
   function norma(n) {
     var org = find(S.orgs, n.org);
-    var h = '<p class="small" style="margin-bottom:2px">' + n.cat + '</p><h2>' + n.org + ' ' + n.cod + '</h2><p class="lead">' + n.t + '</p>' +
+    var h = '<p class="small" style="margin-bottom:2px">' + n.cat + '</p><h2>' + S.normaNombre(n) + '</h2><p class="lead">' + n.t + '</p>' +
       '<h3>Alcance</h3><p>' + n.alc + '</p>';
     if (n.gr.length) {
       h += '<h3>Grados y resistencia mínima</h3><div class="scroll"><table class="tb"><tr><th>Grado</th><th class="n">Fy, MPa</th><th class="n">Rm, MPa</th><th>Nota</th></tr>' +
@@ -220,7 +195,7 @@
     }
     h += sec('Qué hay que saber', n.cl) + (n.x || '') + '<h3>Usos</h3><p>' + n.usos + '</p>' + (n.eq ? '<h3>Equivalentes y afines</h3><p>' + n.eq + '</p><p class="small">Las equivalencias son aproximadas: nunca sustituyas sin comparar química, propiedades y pruebas.</p>' : '') +
       (org ? '<p class="nota"><b style="color:var(--tx)">' + org.n + '.</b> ' + org.d + '</p>' : '');
-    return { title: n.org + ' ' + n.cod, html: h };
+    return { title: S.normaNombre(n), html: h };
   }
   function sistemas(i) {
     if (i != null && S.sistemas[+i]) return { title: S.sistemas[+i].t, html: '<h2>' + S.sistemas[+i].t + '</h2>' + S.sistemas[+i].h };
