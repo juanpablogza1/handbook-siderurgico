@@ -48,14 +48,32 @@ S.route = function (restore) {
   var out = view(parts.slice(1)) || S.views.inicio([]);
   var el = document.getElementById('view');
   el.innerHTML = out.html;
+  var sc = S.scroller();
   document.getElementById('title').textContent = out.title || 'Siderúrgica';
   document.title = (out.title ? out.title + ' — ' : '') + 'Siderúrgica';
   document.getElementById('back').hidden = parts.length < 2;
   var tabs = document.querySelectorAll('#tabs a');
   for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('on', tabs[i].dataset.tab === (S.views[sec] ? sec : 'inicio'));
-  el.scrollTop = restore ? (S.scrolls[S.cur] || 0) : 0;
-  S._lastScroll = el.scrollTop;
+  sc.scrollTop = 0;
   if (out.after) out.after(el);
+  /* La posición guardada se repone después de pintar: algunas vistas llenan su lista en after() */
+  if (restore && S.scrolls[S.cur]) sc.scrollTop = S.scrolls[S.cur];
+  S._lastScroll = sc.scrollTop;
+};
+/* Qué se desplaza: la página entera (iOS sube al inicio al tocar la hora);
+   con el teléfono acostado y la app contragirada, el contenedor de la vista. */
+S.scroller = function () {
+  return document.documentElement.classList.contains('rot') ? document.getElementById('view') : (document.scrollingElement || document.documentElement);
+};
+S.toTop = function () {
+  var sc = S.scroller();
+  try { sc.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { sc.scrollTop = 0; }
+};
+/* Alturas reales de la barra superior y de las pestañas, para rellenos y elementos pegajosos */
+S.medir = function () {
+  var r = document.documentElement, b = document.getElementById('bar'), t = document.getElementById('tabs');
+  if (b) r.style.setProperty('--bar-h', b.offsetHeight + 'px');
+  if (t) r.style.setProperty('--tabs-h', t.offsetHeight + 'px');
 };
 S.go = function (href, restore) {
   S.scrolls[S.cur] = S._lastScroll || 0;
@@ -74,7 +92,10 @@ S.start = function () {
     S.cur = h;
     S.route(true);                                      // atrás / adelante del navegador
   });
-  view.addEventListener('scroll', function () { S._lastScroll = view.scrollTop; }, { passive: true });
+  view.addEventListener('scroll', function () { if (S.scroller() === view) S._lastScroll = view.scrollTop; }, { passive: true });
+  window.addEventListener('scroll', function () { if (S.scroller() !== view) S._lastScroll = S.scroller().scrollTop; }, { passive: true });
+  /* Respaldo: tocar la barra del título también sube al inicio */
+  document.getElementById('bar').addEventListener('click', function (e) { if (!e.target.closest('#back')) S.toTop(); });
   document.getElementById('back').addEventListener('click', function () {
     var parts = S.cur.replace(/^#\/?/, '').split('/').filter(Boolean);
     parts.pop();
@@ -92,6 +113,9 @@ S.start = function () {
   S.lockPortrait();
   S.noZoom();
   S.pwa();
+  S.medir();
+  window.addEventListener('resize', S.medir);
+  window.addEventListener('orientationchange', function () { setTimeout(S.medir, 350); });
   S.route(true);
 };
 
@@ -108,7 +132,6 @@ S.fitIOS = function () {
     h = Math.max(h, window.innerHeight || 0);
     root.style.setProperty('--app-h', h + 'px');
     root.classList.add('ios-sa');
-    window.scrollTo(0, 0);
   }
   set();
   window.addEventListener('resize', set);
@@ -138,6 +161,7 @@ S.lockPortrait = function () {
     root.style.setProperty('--ph', lw + 'px');
     root.classList.add('rot', a === 90 ? 'rot-l' : 'rot-r');
     window.scrollTo(0, 0);
+    if (S.medir) S.medir();
   }
   S.rot = function () { return root.classList.contains('rot-l') ? -1 : root.classList.contains('rot-r') ? 1 : 0; };
   set();
