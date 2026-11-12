@@ -233,83 +233,161 @@
   function grados(t) { if (t == null) return 'Ambiente'; var s = String(t); return (t >= 1000 ? s.slice(0, -3) + ' ' + s.slice(-3) : s) + ' °C'; }
   function colorP(p) { return p.temp == null ? '#7d8b97' : S.tempColor(p.temp); }
 
-  /* Diagrama de flujo de la ruta: [id, columna, fila, etiqueta, ancho] */
+  /* Ruta interactiva: el usuario elige qué fabricar y por qué ruta; el diagrama ilumina el camino
+     y abajo se explica paso a paso. Nodo: [id, columna, fila, nombre, qué sale, ancho] */
   var FL = [
-    ['mineria', 1, 0, 'Minería'],
-    ['coque', 0, 1, 'Coque'], ['peletizado', 1, 1, 'Pélets y sínter'], ['*chatarra', 2, 1, 'Chatarra'],
-    ['alto-horno', 0, 2, 'Alto horno'], ['reduccion-directa', 1, 2, 'Reducción directa'],
-    ['bof', 0, 3, 'Convertidor BOF'], ['eaf', 2, 3, 'Horno eléctrico'],
-    ['metalurgia-secundaria', 1, 4, 'Metalurgia secundaria', 150],
-    ['colada-continua', 1, 5, 'Colada continua'],
-    ['laminacion-caliente', 0, 6, 'Lam. en caliente'], ['largos', 1, 6, 'Largos'], ['tubos-sin-costura', 2, 6, 'Tubo sin costura'],
-    ['decapado', 0, 7, 'Decapado'], ['trefilado', 1, 7, 'Trefilado'],
-    ['laminacion-frio', 0, 8, 'Lam. en frío'], ['tubos-erw', 2, 8, 'Tubo con costura'],
-    ['recocido', 0, 9, 'Recocido'], ['galvanizado', 1, 9, 'Galvanizado'], ['rolado', 2, 9, 'Rolado'],
-    ['hojalata', 0, 10, 'Hojalata'], ['pintado', 1, 10, 'Pintado']];
+    ['mineria', 1, 0, 'Minería', 'concentrado'],
+    ['coque', 0, 1, 'Coque', 'del carbón'], ['peletizado', 1, 1, 'Pélets y sínter', 'mineral aglomerado'],
+    ['alto-horno', 0, 2, 'Alto horno', 'arrabio líquido'], ['reduccion-directa', 1, 2, 'Reducción directa', 'hierro esponja'],
+    ['bof', 0, 3, 'Convertidor BOF', 'acero líquido'], ['*chatarra', 1, 3, 'Chatarra', 'reciclada'], ['eaf', 2, 3, 'Horno eléctrico', 'acero líquido'],
+    ['metalurgia-secundaria', 1, 4, 'Metalurgia secundaria', 'química exacta', 150],
+    ['colada-continua', 1, 5, 'Colada continua', 'planchón o palanquilla', 150],
+    ['largos', 0, 6, 'Lam. de largos', 'varilla, perfiles'], ['laminacion-caliente', 1, 6, 'Lam. en caliente', 'rollo caliente'], ['tubos-sin-costura', 2, 6, 'Tubo sin costura', 'de barra redonda'],
+    ['trefilado', 0, 7, 'Trefilado', 'alambre'], ['decapado', 1, 7, 'Decapado', 'rollo sin óxido'], ['tubos-erw', 2, 7, 'Tubo con costura', 'de rollo caliente'],
+    ['laminacion-frio', 1, 8, 'Lam. en frío', 'rollo delgado'],
+    ['recocido', 0, 9, 'Recocido', 'lámina suave'], ['galvanizado', 1, 9, 'Galvanizado', 'capa de zinc'],
+    ['hojalata', 0, 10, 'Hojalata', 'capa de estaño'], ['pintado', 1, 10, 'Pintado', 'pintura horneada'], ['rolado', 2, 10, 'Rolado', 'techos, losacero']];
   var ED = [['mineria', 'peletizado'], ['peletizado', 'alto-horno'], ['peletizado', 'reduccion-directa'], ['coque', 'alto-horno'], ['alto-horno', 'bof'],
-    ['reduccion-directa', 'eaf'], ['*chatarra', 'eaf'], ['bof', 'metalurgia-secundaria'], ['eaf', 'metalurgia-secundaria'], ['metalurgia-secundaria', 'colada-continua'],
-    ['colada-continua', 'laminacion-caliente'], ['colada-continua', 'largos'], ['colada-continua', 'tubos-sin-costura'], ['laminacion-caliente', 'decapado'],
-    ['largos', 'trefilado'], ['decapado', 'laminacion-frio'], ['laminacion-frio', 'tubos-erw'], ['laminacion-frio', 'recocido'], ['laminacion-frio', 'galvanizado'],
-    ['galvanizado', 'rolado'], ['recocido', 'hojalata'], ['galvanizado', 'pintado']];
+    ['reduccion-directa', 'eaf'], ['*chatarra', 'bof', 1], ['*chatarra', 'eaf'], ['bof', 'metalurgia-secundaria'], ['eaf', 'metalurgia-secundaria'],
+    ['metalurgia-secundaria', 'colada-continua'], ['colada-continua', 'largos'], ['colada-continua', 'laminacion-caliente'], ['colada-continua', 'tubos-sin-costura'],
+    ['largos', 'trefilado'], ['laminacion-caliente', 'decapado'], ['laminacion-caliente', 'tubos-erw'], ['decapado', 'laminacion-frio'],
+    ['laminacion-frio', 'recocido'], ['laminacion-frio', 'galvanizado'], ['recocido', 'hojalata'], ['galvanizado', 'pintado'], ['galvanizado', 'rolado'], ['pintado', 'rolado']];
+  var RUTA = {
+    I: ['Alto horno', 'Mineral y coque; 15–25 % de chatarra en el convertidor', ['mineria', 'peletizado', 'coque', 'alto-horno', '*chatarra', 'bof', 'metalurgia-secundaria', 'colada-continua']],
+    D: ['Reducción directa', 'Mineral reducido con gas, fundido con chatarra en horno eléctrico', ['mineria', 'peletizado', 'reduccion-directa', '*chatarra', 'eaf', 'metalurgia-secundaria', 'colada-continua']],
+    E: ['Chatarra', 'Solo chatarra fundida en horno eléctrico', ['*chatarra', 'eaf', 'metalurgia-secundaria', 'colada-continua']]};
+  var PROD = [
+    ['lc', 'Rollo en caliente', 'planchón', ['laminacion-caliente'], 'Para estructuras, tubería, autopartes gruesas o para seguir a frío.'],
+    ['tc', 'Tubo con costura', 'planchón', ['laminacion-caliente', 'tubos-erw'], 'Se forma con fleje del rollo caliente, decapado o no. También se hace con lámina en frío o galvanizada.'],
+    ['lf', 'Lámina en frío', 'planchón', ['laminacion-caliente', 'decapado', 'laminacion-frio', 'recocido'], 'Más delgada, lisa y precisa: carrocería, línea blanca, muebles.'],
+    ['ga', 'Galvanizada', 'planchón', ['laminacion-caliente', 'decapado', 'laminacion-frio', 'galvanizado'], 'El zinc protege de la corrosión: autos, construcción y electrodomésticos. También se galvaniza rollo decapado sin pasar por frío.'],
+    ['pi', 'Prepintada', 'planchón', ['laminacion-caliente', 'decapado', 'laminacion-frio', 'galvanizado', 'pintado'], 'Zinc más pintura horneada: fachadas, techos y línea blanca.'],
+    ['te', 'Techo y losacero', 'planchón', ['laminacion-caliente', 'decapado', 'laminacion-frio', 'galvanizado', 'rolado'], 'La lámina galvanizada, o pintada, se perfila en rodillos sin calentarla.'],
+    ['ho', 'Hojalata', 'planchón', ['laminacion-caliente', 'decapado', 'laminacion-frio', 'recocido', 'hojalata'], 'Lámina muy delgada con estaño: latas de alimentos y aerosoles.'],
+    ['ts', 'Tubo sin costura', 'barra redonda', ['tubos-sin-costura'], 'Se perfora una barra redonda al rojo: pozos petroleros, calderas.'],
+    ['va', 'Varilla y perfiles', 'palanquilla o tocho', ['largos'], 'Construcción: varilla corrugada, vigas, ángulos y canales.'],
+    ['al', 'Alambre', 'palanquilla', ['largos', 'trefilado'], 'El alambrón se estira en frío por dados: malla, clavo, torón.']];
+  var SALE = { mineria: 'concentrado y finos de mineral', peletizado: 'pélets y sínter', coque: 'coque', 'alto-horno': 'arrabio líquido, 4–4.7 % C', 'reduccion-directa': 'hierro esponja sólido (HRD)',
+    bof: 'acero líquido', eaf: 'acero líquido', 'metalurgia-secundaria': 'acero con la química exacta', 'laminacion-caliente': 'rollo laminado en caliente', largos: 'varilla, alambrón o perfiles',
+    'tubos-sin-costura': 'tubo sin costura', trefilado: 'alambre', decapado: 'rollo limpio y aceitado', 'tubos-erw': 'tubo con costura', 'laminacion-frio': 'rollo delgado y duro',
+    recocido: 'lámina rolada en frío, suave', galvanizado: 'lámina galvanizada', hojalata: 'hojalata', pintado: 'lámina prepintada', rolado: 'lámina acanalada, losacero, polines' };
+  var CORTO = {}; FL.forEach(function (f) { CORTO[f[0]] = f[3]; });
+  var KR = 'sid.ruta';
+  function leeSel() { try { var v = JSON.parse(localStorage.getItem(KR) || 'null'); if (v && RUTA[v.r] && v.p) return v; } catch (e) {} return { r: 'I', p: 'ga' }; }
+  function guardaSel(v) { try { localStorage.setItem(KR, JSON.stringify(v)); } catch (e) {} }
+  function prodDe(k) { for (var i = 0; i < PROD.length; i++) if (PROD[i][0] === k) return PROD[i]; return PROD[3]; }
+
   function flujo() {
     var CX = [59, 180, 301], W = 108, H = 34, PY = 52, Y0 = 21, nd = {}, g = '';
-    FL.forEach(function (f) { nd[f[0]] = { x: CX[f[1]], y: Y0 + f[2] * PY, w: f[4] || W, f: f }; });
-    g += '<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L8 4L0 8z" fill="#6c7a86"/></marker></defs>';
+    FL.forEach(function (f) { nd[f[0]] = { x: CX[f[1]], y: Y0 + f[2] * PY, w: f[5] || W, f: f }; });
+    g += '<defs><marker id="pfa" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#55646f"/></marker><marker id="pfa2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L8 4L0 8z" fill="#e9eef1"/></marker></defs>';
     ED.forEach(function (e) {
       var a = nd[e[0]], b = nd[e[1]], d;
-      if (a.f[2] === b.f[2]) d = 'M' + (a.x + a.w / 2) + ' ' + a.y + 'H' + (b.x - b.w / 2 - 2);
+      if (a.f[2] === b.f[2]) d = a.x < b.x ? 'M' + (a.x + a.w / 2) + ' ' + a.y + 'H' + (b.x - b.w / 2 - 1) : 'M' + (a.x - a.w / 2) + ' ' + a.y + 'H' + (b.x + b.w / 2 + 1);
       else {
-        var y1 = a.y + H / 2, y2 = b.y - H / 2 - 2, m = (y1 + y2) / 2;
+        var y1 = a.y + H / 2, y2 = b.y - H / 2 - 1, m = (y1 + y2) / 2;
         d = a.x === b.x ? 'M' + a.x + ' ' + y1 + 'V' + y2 : 'M' + a.x + ' ' + y1 + 'C' + a.x + ' ' + (m + 6) + ' ' + b.x + ' ' + (m - 6) + ' ' + b.x + ' ' + y2;
       }
-      g += '<path d="' + d + '" fill="none" stroke="#6c7a86" stroke-width="1.5"' + (e[0][0] === '*' ? ' stroke-dasharray="4 3"' : '') + ' marker-end="url(#pfa)"/>';
+      g += '<g class="pf-e" data-a="' + e[0] + '" data-b="' + e[1] + '"><path class="ln' + (e[2] ? ' sec' : '') + '" d="' + d + '" marker-end="url(#pfa)"/><path class="fl" d="' + d + '"/></g>';
     });
     FL.forEach(function (f) {
-      var n = nd[f[0]], x = n.x - n.w / 2, y = n.y - H / 2;
-      if (f[0][0] === '*') {
-        g += '<g><rect x="' + x + '" y="' + y + '" width="' + n.w + '" height="' + H + '" rx="17" fill="none" stroke="#7d8b97" stroke-dasharray="4 3"/>' +
-          '<text x="' + n.x + '" y="' + (n.y - 2) + '" text-anchor="middle" class="nm">' + f[3] + '</text><text x="' + n.x + '" y="' + (n.y + 10) + '" text-anchor="middle" class="tp" fill="#7d8b97">insumo reciclado</text></g>';
-        return;
+      var n = nd[f[0]], x = n.x - n.w / 2, y = n.y - H / 2, ch = f[0][0] === '*', p = ch ? null : find(S.procesos, f[0]), c = ch ? '#a3b2be' : colorP(p);
+      g += '<g class="pf-n' + (ch ? ' ch' : '') + '" data-id="' + f[0] + '" role="button" tabindex="0" aria-label="' + esc(ch ? 'Chatarra' : p.t) + '">' +
+        '<rect x="' + x + '" y="' + y + '" width="' + n.w + '" height="' + H + '" rx="' + (ch ? 17 : 7) + '" fill="' + c + '" fill-opacity=".16" stroke="' + c + '"/>' +
+        '<text x="' + n.x + '" y="' + (n.y - 2) + '" text-anchor="middle" class="nm">' + f[3] + '</text><text x="' + n.x + '" y="' + (n.y + 10.5) + '" text-anchor="middle" class="sb">' + f[4] + '</text></g>';
+    });
+    var alto = Y0 + 10 * PY + H / 2 + 4;
+    return '<div class="iv-hero pf"><svg class="po-svg" id="pfsvg" viewBox="0 0 360 ' + alto + '" role="img" aria-label="Diagrama de la ruta del mineral al producto">' + g + '</svg>' +
+      '<div class="pf-esc"><div class="escala" aria-hidden="true"></div><div class="escala-n"><span>Ambiente</span><span>700 °C</span><span>1 000</span><span>1 250</span><span>1 550 °C</span></div><p>El color de cada caja es la temperatura del material.</p></div>' +
+      '<div class="pf-info" id="pfi" aria-live="polite"></div></div>';
+  }
+  function controles() {
+    return '<h3 class="pf-h">¿Qué quieres fabricar?</h3><div class="presets pf-prod" id="pfp">' + PROD.map(function (x) { return '<button type="button" data-p="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div>' +
+      '<div class="pf-rt" id="pfr">' + Object.keys(RUTA).map(function (k) { return '<button type="button" data-r="' + k + '"><b>' + RUTA[k][0] + '</b></button>'; }).join('') + '</div><p class="pf-rd" id="pfrd"></p>';
+  }
+  function camino(sel) {
+    var pr = prodDe(sel.p), up = RUTA[sel.r][2].slice();
+    return { pr: pr, ids: up.concat(pr[3]) };
+  }
+  function pasos(sel) {
+    var c = camino(sel), pr = c.pr, n = 0, h = '<ol class="ruta pf-pasos">';
+    c.ids.forEach(function (id) {
+      if (id === '*chatarra') {
+        if (sel.r !== 'E') return;
+        n++;
+        return void (h += '<li style="--c:#a3b2be"><i class="nodo"></i><div class="pf-ps"><span class="tt"><span><em>' + n + '</em> Chatarra</span><span class="temp">Ambiente</span></span><span class="ss"><b>Sale:</b> chatarra clasificada por tipo y limpieza</span><span class="ss">Se compra, se separa y se carga en cestas al horno eléctrico.</span></div></li>');
       }
-      var p = find(S.procesos, f[0]); if (!p) return;
-      var c = colorP(p);
-      g += '<a href="#/procesos/' + p.id + '" aria-label="' + esc(p.t) + '"><rect x="' + x + '" y="' + y + '" width="' + n.w + '" height="' + H + '" rx="7" fill="' + c + '" fill-opacity=".16" stroke="' + c + '" stroke-width="1.6"/>' +
-        '<text x="' + n.x + '" y="' + (n.y - 2) + '" text-anchor="middle" class="nm">' + f[3] + '</text><text x="' + n.x + '" y="' + (n.y + 10) + '" text-anchor="middle" class="tp" fill="' + c + '">' + grados(p.temp) + '</text></a>';
+      var p = find(S.procesos, id); if (!p) return; n++;
+      var sale = id === 'colada-continua' ? pr[2] : SALE[id], extra = '';
+      if (id === 'bof') extra = ' La chatarra es 15–25 % de la carga.';
+      if (id === 'eaf' && sel.r === 'D') extra = ' Se carga hierro esponja con chatarra.';
+      h += '<li style="--c:' + colorP(p) + '"><i class="nodo"></i><a href="#/procesos/' + p.id + '"><span class="tt"><span><em>' + n + '</em> ' + esc(p.t) + '</span><span class="temp">' + esc(p.tt) + '</span></span>' +
+        '<span class="ss"><b>Sale:</b> ' + esc(sale) + '</span><span class="ss">' + esc(p.r) + extra + '</span></a></li>';
     });
-    var alto = Y0 + 10 * PY + H / 2 + 6;
-    return '<div class="iv-hero po-fl"><svg class="po-svg" viewBox="0 0 360 ' + alto + '" role="img" aria-label="Diagrama de la ruta del mineral al producto">' + g + '</svg>' +
-      '<span class="iv-hl"><span class="po-hl"><b>Del mineral al producto</b><small>Toca un proceso para ver su animación. El color sigue la temperatura del acero.</small></span></span></div>';
+    return h + '</ol>';
   }
-
-  /* Perfil térmico: una barra por proceso, agrupadas por etapa */
-  var ETC = { materias: 'Materias', hierro: 'Hierro', aceracion: 'Acería', colada: 'Colada', caliente: 'Caliente', frio: 'Frío', recubiertos: 'Recubiertos', formados: 'Formado' };
-  function perfil(mini) {
-    var X0 = mini ? 6 : 32, X1 = mini ? 354 : 354, Y0 = mini ? 74 : 150, Y1 = mini ? 6 : 14, T1 = 1700, GB = mini ? 3 : 3, GG = mini ? 8 : 9;
-    var grupos = S.etapas.map(function (e) { return { e: e, ps: S.procesos.filter(function (p) { return p.et === e.id; }) }; }).filter(function (x) { return x.ps.length; });
-    var n = S.procesos.length, bw = (X1 - X0 - (n - 1) * GB - (grupos.length - 1) * (GG - GB)) / n;
-    function y(t) { return Y0 - (Y0 - Y1) * t / T1; }
-    var g = '', x = X0;
-    if (!mini) {
-      [500, 1000, 1500].forEach(function (t) { g += '<path d="M' + X0 + ' ' + y(t).toFixed(1) + 'H' + X1 + '" stroke="#26313b"/><text x="' + (X0 - 4) + '" y="' + (y(t) + 3.5).toFixed(1) + '" text-anchor="end" class="ax">' + t + '</text>'; });
-      g += '<text x="' + (X0 - 4) + '" y="9" text-anchor="end" class="ax">°C</text>';
+  function infoNodo(id) {
+    if (id === '*chatarra') return '<b>Chatarra</b><span>Acero viejo de demolición, autos y recortes de planta. Es la carga principal del horno eléctrico y 15–25 % del convertidor.</span>';
+    var p = find(S.procesos, id); if (!p) return '';
+    return '<b style="color:' + colorP(p) + '">' + esc(p.t) + ' <small>' + esc(p.tt) + '</small></b><span><i>Entra:</i> ' + esc(p.ent) + '</span><span><i>Sale:</i> ' + esc(p.sal) + '</span>' +
+      '<a href="#/procesos/' + p.id + '">Ver proceso y animación<i class="chev"></i></a>';
+  }
+  function montarRuta(root) {
+    var svg = root.querySelector('#pfsvg'), info = root.querySelector('#pfi'), sel = leeSel(), foco = null;
+    function pintar() {
+      var c = camino(sel), on = {};
+      c.ids.forEach(function (id) { on[id] = 1; });
+      svg.querySelectorAll('.pf-n').forEach(function (n) { n.classList.toggle('on', !!on[n.dataset.id]); n.classList.toggle('foco', n.dataset.id === foco); });
+      svg.querySelectorAll('.pf-e').forEach(function (e) { e.classList.toggle('on', !!(on[e.dataset.a] && on[e.dataset.b])); });
+      root.querySelectorAll('#pfp button').forEach(function (b) { b.classList.toggle('on', b.dataset.p === sel.p); });
+      root.querySelectorAll('#pfr button').forEach(function (b) { b.classList.toggle('on', b.dataset.r === sel.r); });
+      root.querySelector('#pfrd').textContent = RUTA[sel.r][1] + '.';
+      var aviso = sel.r === 'E' && sel.p === 'ho' ? ' Con solo chatarra es difícil: el cobre y el estaño que trae no se pueden quitar del acero, y la hojalata y el embutido profundo piden acero muy limpio.' : '';
+      if (!foco) info.innerHTML = '<b>' + c.pr[1] + ' por ' + RUTA[sel.r][0].toLowerCase() + '</b><span>' + c.pr[4] + aviso + '</span><span class="pf-tip">Toca una caja para ver qué entra y qué sale.</span>';
+      root.querySelector('#pfst').innerHTML = pasos(sel);
+      root.querySelector('#pfsh').textContent = 'Paso a paso: ' + c.pr[1].toLowerCase() + ' por ' + RUTA[sel.r][0].toLowerCase();
     }
-    grupos.forEach(function (gr, gi) {
-      var x0 = x;
-      gr.ps.forEach(function (p) {
-        var t = p.temp == null ? 25 : p.temp, top = Math.min(y(t), Y0 - 3), bar = '<rect x="' + x.toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (Y0 - top).toFixed(1) + '" rx="2" fill="' + colorP(p) + '"/>';
-        g += mini ? bar : '<a href="#/procesos/' + p.id + '" aria-label="' + esc(p.t + ', ' + grados(p.temp)) + '"><rect x="' + (x - GB / 2).toFixed(1) + '" y="' + Y1 + '" width="' + (bw + GB).toFixed(1) + '" height="' + (Y0 - Y1) + '" fill="transparent"/>' + bar + '</a>';
-        x += bw + GB;
-      });
-      if (!mini) g += '<text x="' + ((x0 + x - GB) / 2).toFixed(1) + '" y="' + (Y0 + (gi % 2 ? 24 : 12)) + '" text-anchor="middle" class="ax">' + ETC[gr.e.id] + '</text>';
-      x += GG - GB;
-    });
-    g += '<path d="M' + X0 + ' ' + y(1538).toFixed(1) + 'H' + X1 + '" stroke="#fff3d6" stroke-opacity=".55" stroke-dasharray="4 3"/>';
-    if (!mini) g += '<text x="' + X1 + '" y="' + (y(1538) - 4).toFixed(1) + '" text-anchor="end" class="sm">Fusión del hierro 1 538 °C</text>';
-    return '<svg class="po-svg" viewBox="0 0 360 ' + (mini ? Y0 + 4 : Y0 + 30) + '" aria-hidden="' + (mini ? 'true' : 'false') + '">' + g + '</svg>';
+    root.querySelector('#pfp').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; sel.p = b.dataset.p; foco = null; guardaSel(sel); pintar(); });
+    root.querySelector('#pfr').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; sel.r = b.dataset.r; foco = null; guardaSel(sel); pintar(); });
+    function tocar(e) {
+      var n = e.target.closest('.pf-n'); if (!n) return;
+      foco = foco === n.dataset.id ? null : n.dataset.id; pintar();
+      if (foco) info.innerHTML = infoNodo(foco);
+    }
+    svg.addEventListener('click', tocar);
+    svg.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tocar(e); } });
+    var bp = root.querySelector('#pfp .on'); pintar();
+    bp = root.querySelector('#pfp .on'); if (bp && bp.scrollIntoView) { var cont = root.querySelector('#pfp'); cont.scrollLeft = Math.max(0, bp.offsetLeft - 40); }
   }
-  function cardPerfil() {
-    return '<div class="po-card"><b class="po-ct">Perfil térmico de la ruta</b><p class="po-cs">El acero se funde una sola vez. Después se recalienta para laminarlo, sin fundirlo, y termina procesado en frío.</p>' +
-      perfil(false) + '<p class="small" style="margin:6px 0 0">Una barra por proceso, a su temperatura típica. Toca una barra para abrirlo.</p></div>';
+  /* Temperatura de trabajo: rango típico de cada proceso, con nombre y cifra, en el orden de la ruta */
+  function rango(p) {
+    var m = String(p.tt || '').replace(/(\d)[   ](\d{3})/g, '$1$2').match(/\d+/g);
+    return m ? m.map(Number) : [];
+  }
+  function miles(n) { var s = String(n); return n >= 1000 ? s.slice(0, -3) + ' ' + s.slice(-3) : s; }
+  function cardTemp() {
+    var TM = 1700, LIQ = 1538, A1 = 727;
+    function pc(t) { return (100 * t / TM).toFixed(2) + '%'; }
+    var h = '<div class="po-tmp"><div class="po-tz"><i class="liq" style="left:' + pc(LIQ) + '"></i><i class="ln" style="left:' + pc(LIQ) + '"></i><i class="ln a1" style="left:' + pc(A1) + '"></i></div>' +
+      '<div class="po-tr po-th"><span></span><span class="tk"><em style="left:' + pc(A1) + '">727</em><em style="left:' + pc(LIQ) + '">1 538</em></span></div>';
+    S.etapas.forEach(function (e) {
+      var ps = S.procesos.filter(function (x) { return x.et === e.id; }); if (!ps.length) return;
+      h += '<div class="po-te">' + esc(e.t) + '</div>';
+      ps.forEach(function (p) {
+        var r = rango(p), lo = Math.min.apply(null, r), hi = Math.max.apply(null, r), barra, val;
+        if (!r.length) {
+          barra = '<i class="amb" style="left:' + pc(25) + '"></i>'; val = '<b style="left:calc(' + pc(25) + ' + 10px)">Ambiente</b>';
+        } else {
+          var txt = r.length === 1 ? miles(r[0]) : miles(r[0]) + (/→/.test(p.tt) ? ' → ' : '–') + miles(r[1]);
+          barra = '<i style="left:' + pc(lo) + ';width:max(6px, ' + pc(hi - lo) + ');' + (r.length > 1 ? 'margin-left:0' : 'margin-left:-3px') + ';background:linear-gradient(90deg,' + S.tempColor(lo) + ',' + S.tempColor(hi) + ')"></i>';
+          val = hi > 1100 ? '<b class="iz" style="right:calc(100% - ' + pc(lo) + ' + 8px)">' + txt + '</b>' : '<b style="left:calc(' + pc(hi) + ' + 8px)">' + txt + '</b>';
+        }
+        h += '<a class="po-tr" href="#/procesos/' + p.id + '"><span class="nm">' + esc(p.id === 'metalurgia-secundaria' ? 'Metalurgia sec.' : (CORTO[p.id] || p.t)) + '</span><span class="tk">' + barra + val + '</span></a>';
+      });
+    });
+    h += '<div class="po-tr po-ax"><span></span><span class="tk">' + [0, 500, 1000, 1500].map(function (t) { return '<em style="left:' + pc(t) + '">' + miles(t) + '</em>'; }).join('') + '</span></div></div>';
+    return '<div class="po-card"><b class="po-ct">Temperatura de trabajo</b><p class="po-cs">Rango típico de cada proceso, en °C. Arriba de 1 538 °C el hierro está líquido; abajo de 727 °C la austenita ya se transformó.</p>' + h +
+      '<p class="small" style="margin:8px 0 0">Laminación: la barra va de la temperatura de entrada a la de salida. Toca un renglón para abrir el proceso.</p></div>';
   }
   function tileFab() {
     var ids = Object.keys(S.fab).sort(function (a, b) { return (S.fabUso[b] || []).length - (S.fabUso[a] || []).length; }).slice(0, 5), max = (S.fabUso[ids[0]] || []).length || 1;
@@ -336,21 +414,41 @@
     return h + '</ol>';
   }
   S.procesosHome = function () {
-    var h = '<p class="lead">Dos rutas para hacer acero, una sola colada y tres familias de producto. ' + S.procesos.length + ' procesos, cada uno con su animación.</p>' +
-      flujo() + '<div class="iv-g2">' + tileBalance() + tileFab() + '</div>' + cardPerfil() +
-      '<h3>Todos los procesos</h3>' + ruta();
-    return { title: 'Procesos', html: h };
+    var h = '<p class="lead">Elige un producto y una ruta: el diagrama ilumina el camino del mineral, o de la chatarra, hasta el producto, y abajo se explica cada paso.</p>' +
+      controles() + flujo() + '<h3 id="pfsh">Paso a paso</h3><div id="pfst"></div>' +
+      '<div class="iv-g2">' + tileBalance() + tileFab() + '</div>' + cardTemp() + '<h3>Todos los procesos</h3>' + ruta();
+    return { title: 'Procesos', html: h, after: montarRuta };
   };
 
   /* ======================= Inicio ======================= */
 
+  function rutasMini() {
+    function tc(id) { var p = find(S.procesos, id); return p ? colorP(p) : '#7d8b97'; }
+    var H = 30, N = [
+      ['i', 95, 20, 168, 'Alto horno y convertidor', '70 % del acero mundial', tc('bof')],
+      ['e', 265, 20, 150, 'Horno eléctrico', '30 %, sobre todo chatarra', tc('eaf')],
+      ['c', 180, 74, 150, 'Colada continua', '', tc('colada-continua')],
+      ['p', 59, 124, 104, 'Planos', '', tc('laminacion-caliente')], ['l', 180, 124, 104, 'Largos', '', tc('largos')], ['t', 301, 124, 104, 'Tubos', '', tc('tubos-sin-costura')]];
+    var nd = {}, g = '<defs><marker id="pfm" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" fill="#6c7a86"/></marker></defs>';
+    N.forEach(function (n) { nd[n[0]] = n; });
+    [['i', 'c'], ['e', 'c'], ['c', 'p'], ['c', 'l'], ['c', 't']].forEach(function (e) {
+      var a = nd[e[0]], b = nd[e[1]], y1 = a[2] + H / 2, y2 = b[2] - H / 2 - 2, m = (y1 + y2) / 2;
+      g += '<path d="M' + a[1] + ' ' + y1 + (a[1] === b[1] ? 'V' + y2 : 'C' + a[1] + ' ' + (m + 6) + ' ' + b[1] + ' ' + (m - 6) + ' ' + b[1] + ' ' + y2) + '" fill="none" stroke="#6c7a86" stroke-width="1.5" marker-end="url(#pfm)"/>';
+    });
+    N.forEach(function (n) {
+      g += '<rect x="' + (n[1] - n[3] / 2) + '" y="' + (n[2] - (n[5] ? H / 2 + 4 : H / 2)) + '" width="' + n[3] + '" height="' + (n[5] ? H + 8 : H) + '" rx="7" fill="' + n[6] + '" fill-opacity=".16" stroke="' + n[6] + '" stroke-width="1.6"/>' +
+        '<text x="' + n[1] + '" y="' + (n[2] + (n[5] ? -2 : 4)) + '" text-anchor="middle" class="nm">' + n[4] + '</text>' +
+        (n[5] ? '<text x="' + n[1] + '" y="' + (n[2] + 12) + '" text-anchor="middle" class="tp" fill="#a3b2be">' + n[5] + '</text>' : '');
+    });
+    return '<svg class="po-svg" viewBox="0 0 360 146" aria-hidden="true">' + g + '</svg>';
+  }
   S.inicioTablero = function () {
     var clave = ['C', 'Mn', 'Si', 'Cr', 'Ni', 'Mo', 'V', 'Nb', 'Ti', 'B'], col = {};
     S.elementos.forEach(function (e) { col[e.s] = S.grupos[e.g][1]; });
     var cnt = {}; S.normas.forEach(function (n) { cnt[n.org] = (cnt[n.org] || 0) + 1; });
     var orgs = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; });
-    var procesos = '<a class="iv-hero po-ini" href="#/procesos"><span class="iv-hm">' + perfil(true) + '</span>' +
-      '<span class="iv-hl"><span class="po-hl"><b>' + S.procesos.length + ' procesos animados</b><small>Del mineral al producto. Cada barra es un proceso a su temperatura.</small></span><i class="chev"></i></span></a>';
+    var procesos = '<a class="iv-hero po-ini" href="#/procesos"><span class="iv-hm">' + rutasMini() + '</span>' +
+      '<span class="iv-hl"><span class="po-hl"><b>' + S.procesos.length + ' procesos animados</b><small>Dos rutas para hacer acero, una colada y tres familias de producto.</small></span><i class="chev"></i></span></a>';
     var quimica = '<a class="iv-tile" href="#/quimica"><b>Química del acero</b><div class="po-mel">' + clave.map(function (s) { return '<i style="--c:' + (col[s] || '#a3b2be') + '">' + s + '</i>'; }).join('') + '</div>' +
       '<span>' + S.elementos.length + ' elementos, diagrama Fe-C y ' + S.grados.length + ' grados.</span></a>';
     var normas = '<a class="iv-tile" href="#/normas"><b>Normas y usos</b><strong class="po-big">' + S.normas.length + '</strong><div class="iv-rep po-rep">' + orgs.map(function (o) {
