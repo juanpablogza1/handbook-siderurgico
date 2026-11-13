@@ -621,3 +621,9 @@ a.po-tr:active{background:var(--s2)}
 .mcard.mina .mgm svg{fill:#ffc53d}
 .mgm:active{background:#34424e}
 .mgm:focus-visible{outline:2px solid var(--t1200);outline-offset:2px}
+.pl-h{display:flex;align-items:flex-start;gap:10px}
+.pl-h b{flex:1;min-width:0}
+.pl-gm{flex:none;display:inline-flex;align-items:center;gap:4px;margin:-4px -2px 0 0;padding:5px 8px 5px 6px;border:1px solid var(--line);border-radius:8px;font:600 12.5px/1 var(--body);color:var(--mut);text-decoration:none}
+.pl-gm svg{width:15px;height:15px;fill:#ff3b30}
+.pl-gm:active{background:var(--s2)}
+.pl-gm:focus-visible{outline:2px solid var(--t1200);outline-offset:2px}

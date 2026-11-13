@@ -248,9 +248,17 @@
     if (off) out.push('<i class="off">Parada</i>');
     return out.length ? '<div class="tags">' + out.join('') + '</div>' : '';
   }
-  function planta(p) { return '<div class="pl"><b>' + p[0] + '</b><span class="u">' + p[1] + '</span>' + tags(p[0] + '. ' + p[2]) + '<p>' + p[2] + '</p></div>'; }
+  /* Enlace discreto a Google Maps: busca la planta por nombre, empresa y lugar */
+  var PIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7 7 0 0 0-7 7c0 5.1 7 12 7 12s7-6.9 7-12a7 7 0 0 0-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>';
+  function planta(p, emp) {
+    var q = p[0] + (emp && p[0].indexOf(emp) < 0 ? ' ' + emp : '') + ', ' + p[1];
+    var gm = '<a class="pl-gm" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) + '" target="_blank" rel="noopener" aria-label="Ver ' + p[0] + ' en Google Maps">' + PIN + 'Maps</a>';
+    return '<div class="pl"><div class="pl-h"><b>' + p[0] + '</b>' + gm + '</div><span class="u">' + p[1] + '</span>' + tags(p[0] + '. ' + p[2]) + '<p>' + p[2] + '</p></div>';
+  }
   function plantas(id) {
     var ps = S.plantas && S.plantas[id]; if (!ps) return null;
+    var emp = ''; S.empresas.forEach(function (x) { if (x.id === id) emp = x.n; });
+    function pl(p) { return planta(p, emp); }
     var groups = [], cur = null, n = 0;
     ps.forEach(function (p) {
       if (typeof p === 'string') { cur = { t: p, it: [] }; groups.push(cur); return; }
@@ -258,8 +266,8 @@
       cur.it.push(p); n++;
     });
     var h = groups.length === 1 && !groups[0].t
-      ? groups[0].it.map(planta).join('')
-      : groups.map(function (g, k) { return '<details class="sub"' + (k === 0 ? ' open' : '') + '><summary><span class="st">' + g.t + '</span><span class="ct">' + g.it.length + '</span></summary><div class="in">' + g.it.map(planta).join('') + '</div></details>'; }).join('');
+      ? groups[0].it.map(pl).join('')
+      : groups.map(function (g, k) { return '<details class="sub"' + (k === 0 ? ' open' : '') + '><summary><span class="st">' + g.t + '</span><span class="ct">' + g.it.length + '</span></summary><div class="in">' + g.it.map(pl).join('') + '</div></details>'; }).join('');
     return { n: n, html: h + '<p class="small" style="margin:10px 0 4px">Sitios principales; la lista no es exhaustiva.</p>' };
   }
   function linea(items) {
