@@ -614,3 +614,10 @@ a.po-tr:active{background:var(--s2)}
 .pz-nt:empty{display:none}
 .pz-nt i{flex:none;width:18px;border-top:2px dashed #24a070}
 .pz-tl strong{color:var(--tx)}
+.mcard .macc{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-top:12px}
+.mcard .macc .mlk{margin-top:0}
+.mgm{display:inline-flex;align-items:center;gap:7px;padding:9px 13px 9px 10px;border-radius:10px;background:var(--s2);color:var(--tx);font:650 14px/1 var(--body);text-decoration:none}
+.mgm svg{width:18px;height:18px;fill:#ff3b30}
+.mcard.mina .mgm svg{fill:#ffc53d}
+.mgm:active{background:#34424e}
+.mgm:focus-visible{outline:2px solid var(--t1200);outline-offset:2px}

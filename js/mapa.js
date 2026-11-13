@@ -29,6 +29,19 @@
     if (!left) cb();
   }
   function capTxt(a) { return a[6] ? '≈ ' + a[6] + ' Mt/año' : ''; }
+  /* Botón que abre la planta en Google Maps (fotos, satélite y Street View). Se busca por nombre, empresa, lugar y país
+     porque las coordenadas de la app son a nivel de ciudad. El lugar sale del inicio de la nota cuando parece un lugar. */
+  var PIN = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a7 7 0 0 0-7 7c0 5.1 7 12 7 12s7-6.9 7-12a7 7 0 0 0-7-7Zm0 9.6a2.6 2.6 0 1 1 0-5.2 2.6 2.6 0 0 1 0 5.2Z"/></svg>';
+  function lugar(nota) {
+    var t = (nota || '').split('.')[0].trim();
+    return t && t.length <= 32 && !/\d/.test(t) && !/única|cuna|capacidad|proceso|reconversión|antes|considerada|grupo|planta|opera/i.test(t) ? t : '';
+  }
+  function gmaps(nombre, empresa, pais, tipo, nota) {
+    var l = lugar(nota);
+    var q = nombre + (empresa && nombre.indexOf(empresa) < 0 ? ' ' + empresa : '') + (tipo ? ' ' + tipo : '') + (l ? ', ' + l : '') + ', ' + pais;
+    return '<a class="mgm" href="https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q) + '" target="_blank" rel="noopener">' + PIN + 'Ver en Google Maps</a>';
+  }
+  S.gmapsLink = gmaps;
 
   S.vistaMapa = function (emp) {
     var e = null; if (emp) S.empresas.forEach(function (x) { if (x.id === emp) e = x; });
@@ -139,14 +152,14 @@
         var m = ALL[sel].a; if (m[6]) S.empresas.forEach(function (x) { if (x.id === m[6]) emp2 = x; });
         info.innerHTML = '<div class="mcard mina"><b>' + m[0] + '</b><span class="u">' + m[1] + ' · ' + m[2] + '</span>' +
           '<div class="tags"><i>Mina de hierro</i>' + (m[5] ? '<i>≈ ' + m[5] + ' Mt/año de mineral</i>' : '') + '</div>' +
-          (m[7] ? '<p>' + m[7] + '.</p>' : '') + (emp2 ? '<a class="mlk" href="#/industria/' + emp2.id + '">Ver ' + emp2.n + '</a>' : '') + '</div>';
+          (m[7] ? '<p>' + m[7] + '.</p>' : '') + '<div class="macc">' + gmaps(m[0], '', m[2], 'mina', m[7]) + (emp2 ? '<a class="mlk" href="#/industria/' + emp2.id + '">Ver ' + emp2.n + '</a>' : '') + '</div></div>';
         return;
       }
       var a = S.acerias[sel]; if (a[7]) S.empresas.forEach(function (x) { if (x.id === a[7]) emp2 = x; });
       info.innerHTML = '<div class="mcard"><b>' + a[0] + '</b><span class="u">' + a[1] + ' · ' + a[2] + '</span>' +
         '<div class="tags"><i>' + S.rutas[a[5]][0] + '</i>' + (a[6] ? '<i>' + capTxt(a) + '</i>' : '') + '</div>' +
-        (a[8] ? '<p>' + a[8] + '.</p>' : '') +
-        (emp2 ? '<a class="mlk" href="#/industria/' + emp2.id + '">Ver ' + emp2.n + '</a>' : '') + '</div>';
+        (a[8] ? '<p>' + a[8] + '.</p>' : '') + '<div class="macc">' + gmaps(a[0], a[1], a[2], '', a[8]) +
+        (emp2 ? '<a class="mlk" href="#/industria/' + emp2.id + '">Ver ' + emp2.n + '</a>' : '') + '</div></div>';
     }
     function lista(inview, minas) {
       if (!list.isConnected) return;
