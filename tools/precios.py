@@ -14,9 +14,8 @@ INICIO = (2015, 1)
 ST, GT = 0.90718474, 1.0160469   # tonelada corta y tonelada larga, en toneladas métricas
 SERIES = [
     # id, fuente, código(s), factor a USD/t
-    ('hrc', 'yahoo', ['HRC=F'], 1 / ST),
-    ('hms', 'yahoo', ['FSF=F'], 1.0),
-    ('bus', 'yahoo', ['BUS=F', 'BCH=F'], 1 / GT),
+    ('hrc', 'yahoo', [['HRC=F']], 1 / ST),
+    ('bus', 'yahoo', [['BUS=F', 'BCH=F']], 1 / GT),
     ('mineral', 'fred', ['PIORECRUSDM'], 1.0),
     ('zinc', 'fred', ['PZINCUSDM'], 1.0),
     ('estano', 'fred', ['PTINUSDM'], 1.0),
@@ -55,27 +54,35 @@ def fred(codigo):
     return meses, {'f': ultimo, 'v': meses[max(meses)]} if meses else None
 
 
-def yahoo(simbolo):
-    """Futuros de CME vía Yahoo Finance con la librería yfinance (maneja la sesión que Yahoo exige)."""
+def yahoo_uno(simbolo):
+    """Promedio mensual de los cierres diarios de un futuro de CME en Yahoo Finance (yfinance maneja la sesión)."""
     import yfinance as yf
-    t = yf.Ticker(simbolo)
-    h = t.history(period='max', interval='1mo', auto_adjust=False)
+    h = yf.Ticker(simbolo).history(period='max', interval='1d', auto_adjust=False)
+    h = h[h['Close'].notna()]
+    if not len(h):
+        raise RuntimeError('sin datos')
     meses = {}
-    for idx, fila in h.iterrows():
-        c = fila.get('Close')
-        if c is None or c != c:
-            continue
-        meses[(idx.year, idx.month)] = float(c)
-    d = t.history(period='1mo', interval='1d', auto_adjust=False)
-    d = d[d['Close'].notna()]
-    if len(d):
-        idx, c = d.index[-1], float(d['Close'].iloc[-1])
-        meses[(idx.year, idx.month)] = c                  # el mes en curso, con el último cierre diario
-        ultimo = {'f': idx.strftime('%Y-%m-%d'), 'v': c}
-    else:
-        ultimo = {'f': '%04d-%02d' % max(meses), 'v': meses[max(meses)]} if meses else None
-    print('   %s: %d meses' % (simbolo, len(meses)), flush=True)
-    return meses, ultimo
+    for (a, m), g in h['Close'].groupby([h.index.year, h.index.month]):
+        meses[(int(a), int(m))] = float(g.mean())
+    idx = h.index[-1]
+    print('   %s: %d días, %d meses, último %s' % (simbolo, len(h), len(meses), idx.strftime('%Y-%m-%d')), flush=True)
+    return meses, {'f': idx.strftime('%Y-%m-%d'), 'v': float(h['Close'].iloc[-1])}
+
+
+def yahoo(simbolos):
+    """Une varios contratos (el viejo y su sucesor): el más reciente manda donde se traslapan."""
+    meses, ultimo, usados = {}, None, []
+    for sim in simbolos:
+        try:
+            m, u = yahoo_uno(sim)
+            meses.update(m); usados.append(sim)
+            if not ultimo or u['f'] > ultimo['f']:
+                ultimo = u
+        except Exception as e:
+            print('   %s: falla %s' % (sim, str(e)[:100]), flush=True)
+    if not meses:
+        raise RuntimeError('ningún contrato respondió')
+    return meses, ultimo, ' + '.join(usados)
 
 
 def siguiente(a, m):
@@ -93,7 +100,10 @@ def main():
     for sid, fuente, codigos, factor in SERIES:
         for codigo in codigos:
             try:
-                meses, ultimo = (yahoo if fuente == 'yahoo' else fred)(codigo)
+                if fuente == 'yahoo':
+                    meses, ultimo, codigo = yahoo(codigo)
+                else:
+                    meses, ultimo = fred(codigo)
                 meses = {k: v for k, v in meses.items() if k >= INICIO}
                 if len(meses) < 6:
                     raise RuntimeError('solo %d meses' % len(meses))
