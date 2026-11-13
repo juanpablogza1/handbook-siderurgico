@@ -590,3 +590,9 @@ a.po-tr:active{background:var(--s2)}
 .pz-src dt{font:650 12.5px/1.2 var(--body);color:var(--tx);margin-top:8px}
 .pz-src dd{margin:2px 0 0;font-size:13.5px;line-height:1.42;color:var(--mut)}
 .pz-src dd b{color:var(--tx);font-weight:650}
+
+.pz-kpi strong.up{color:var(--t1200)}.pz-kpi strong.dn{color:#6aa3d8}
+.pz-kpi>div>em{display:block;margin-top:1px;font:500 10.5px/1.2 var(--body);font-style:normal;color:var(--dim)}
+.pz-k2{display:block;margin-top:4px;font:650 12px/1.2 var(--body);color:var(--tx);white-space:nowrap}
+.pz-st{margin:4px 0 0;font-size:12px;line-height:1.35;color:var(--dim)}
+.pz-st b{color:var(--mut);font-weight:650}.pz-st b.ok{color:#7fc8a0}

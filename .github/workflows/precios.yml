@@ -1,0 +1,36 @@
+# Actualiza los precios de la app desde FRED todos los días.
+# Solo hace commit cuando FRED publica datos nuevos o corrige los anteriores.
+name: Precios
+on:
+  schedule:
+    - cron: '23 14 * * *'   # diario, 8:23 en Monterrey
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['tools/precios.py', '.github/workflows/precios.yml']
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: precios
+  cancel-in-progress: false
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar series de FRED
+        run: python3 tools/precios.py
+      - name: Guardar si cambió
+        run: |
+          if git diff --quiet -- data/precios.json && git ls-files --error-unmatch data/precios.json >/dev/null 2>&1; then
+            echo "Sin cambios"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/precios.json
+          git commit -m "Precios: datos de FRED al $(python3 -c 'import json;print(json.load(open("data/precios.json"))["fin"])')"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          curl -s -o /dev/null -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages/builds" || true

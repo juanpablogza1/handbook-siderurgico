@@ -1,6 +1,6 @@
 /* Service worker: guarda toda la app para uso sin conexión.
    Sube VERSION en cada publicación para que los teléfonos descarguen el contenido nuevo. */
-var VERSION = 'siderurgica-v1.14.0';
+var VERSION = 'siderurgica-v1.15.0';
 var ASSETS = [
   './', 'index.html', 'manifest.webmanifest', 'css/app.css',
   'js/core.js', 'js/anim-lib.js', 'js/anim-1.js', 'js/anim-2.js', 'js/anim-3.js',
@@ -22,6 +22,7 @@ self.addEventListener('activate', function (e) {
 /* Primero la red para tener la versión más nueva; si no hay conexión, la copia guardada. */
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  if (/\/data\/precios\.json$/.test(new URL(e.request.url).pathname)) return; // precios: siempre de la red; sin red, la app usa lo guardado
   e.respondWith(
     fetch(e.request.url, { cache: 'no-cache', credentials: 'same-origin' }).then(function (res) {
       if (res && res.ok) { var copy = res.clone(); caches.open(VERSION).then(function (c) { c.put(e.request, copy); }); }

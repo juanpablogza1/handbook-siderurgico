@@ -14,6 +14,61 @@
   function lee() { try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v && v.r && v.on) return v; } catch (e) {} return { r: '5', on: { acero: 1, chatarra: 1, mineral: 1 } }; }
   function guarda(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
 
+  /* Datos en línea: GitHub Actions baja FRED a diario y deja data/precios.json en el repositorio.
+     La app lo lee al abrirse; si no hay red usa lo último guardado, y si nunca se conectó, los datos incluidos. */
+  var RAW = 'https://raw.githubusercontent.com/juanpablogza1/handbook-siderurgico/main/data/precios.json', CACHE = 'sid.preciosData';
+  var est = { origen: 'incluido', fin: null, actualizado: null, error: false };
+  function valido(j) {
+    if (!j || !j.series || !j.inicio) return false;
+    var n = j.series.acero && j.series.acero.length;
+    return ['acero', 'chatarra', 'mineral'].every(function (k) {
+      var a = j.series[k]; return a && a.length === n && n > 60 && a.every(function (v) { return typeof v === 'number' && v > 0; });
+    });
+  }
+  function aplicar(j, origen) {
+    if (!valido(j)) return false;
+    P().inicio = j.inicio.slice();
+    P().series.forEach(function (s) { s.d = j.series[s.id].slice(); });
+    est = { origen: origen, fin: j.fin || null, actualizado: j.actualizado || null, error: false };
+    return true;
+  }
+  try { var g0 = JSON.parse(localStorage.getItem(CACHE) || 'null'); if (g0) aplicar(g0, 'guardado'); } catch (e) {}
+  function bajar(url) {
+    return new Promise(function (ok, no) {
+      var ctl = window.AbortController ? new AbortController() : null;
+      var t = setTimeout(function () { if (ctl) ctl.abort(); no(new Error('tiempo')); }, 8000);
+      fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now(), { cache: 'no-store', signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (j) { clearTimeout(t); ok(j); }, function (e) { clearTimeout(t); no(e); });
+    });
+  }
+  function firma() { return P().series.map(function (s) { return s.d.length + ':' + s.d.join(','); }).join('|'); }
+  function repintar(cambio) {
+    var el = document.getElementById('pzst'); if (el) el.innerHTML = estadoTxt();
+    if (!cambio || !/^#\/industria(\/precios)?$/.test(S.cur || '')) return;
+    if (S.scroller) S.scrolls[S.cur] = S.scroller().scrollTop;
+    S.route(true);
+  }
+  S.preciosRefrescar = function () {
+    if (S._pzCarga) return S._pzCarga;
+    var antes = firma();
+    S._pzCarga = bajar(RAW).catch(function () { return bajar('data/precios.json'); }).then(function (j) {
+      if (!valido(j)) throw new Error('datos inválidos');
+      if (j.series.acero.length < P().series[0].d.length) throw new Error('datos más viejos que los guardados');
+      aplicar(j, 'en línea');
+      try { localStorage.setItem(CACHE, JSON.stringify(j)); } catch (e) {}
+      S._pzHora = Date.now(); repintar(firma() !== antes);
+    }).catch(function () { est.error = true; repintar(false); }).then(function () { S._pzCarga = null; });
+    return S._pzCarga;
+  };
+  function dia(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.getDate() + ' ' + MES[d.getMonth()] + ' ' + d.getFullYear(); }
+  function estadoTxt() {
+    var L = fecha(P().series[0].d.length - 1);
+    if (est.origen === 'en línea') return '<b class="ok">Al día.</b> Datos hasta ' + L + ', descargados al abrir la app.' + (est.actualizado ? ' Último cambio en FRED detectado el ' + dia(est.actualizado) + '.' : '');
+    if (est.origen === 'guardado') return (est.error ? '<b>Sin conexión.</b> ' : '<b>Buscando datos nuevos…</b> ') + 'Mostrando lo guardado de la última consulta, hasta ' + L + '.';
+    return (est.error ? '<b>Sin conexión.</b> ' : '<b>Buscando datos nuevos…</b> ') + 'Mostrando los datos incluidos en la app, hasta ' + L + '.';
+  }
+
   function spark(s, n, w, h) {
     var d = s.d.slice(-n), lo = Math.min.apply(null, d), hi = Math.max.apply(null, d), k = hi - lo || 1;
     var pts = d.map(function (v, i) { return (i * w / (d.length - 1)).toFixed(1) + ' ' + (h - 2 - (v - lo) * (h - 4) / k).toFixed(1); }).join('L');
@@ -23,8 +78,10 @@
     var L = P().series[0].d.length - 1;
     return '<div class="pz-kpi">' + P().series.map(function (s) {
       var c = cambio(s, 12);
-      return '<div style="--c:' + s.col + '"><b>' + s.k + '</b><strong>' + valor(s, L, true) + '</strong><em class="' + (c >= 0 ? 'up' : 'dn') + '">' + pct(c) + ' <small>en 12 meses</small></em>' + spark(s, 24, 100, 28) + '</div>';
-    }).join('') + '</div><p class="pz-cut">Último dato: ' + fecha(L) + '. Acero y chatarra son índices (1982 = 100); el mineral, dólares por tonelada.</p>';
+      return '<div style="--c:' + s.col + '"><b>' + s.k + '</b><strong class="' + (c >= 0 ? 'up' : 'dn') + '">' + pct(c) + '</strong><em>en 12 meses</em>' +
+        '<span class="pz-k2">' + (s.u === 'USD/t' ? num(s.d[L], 0) + ' USD/t' : (rel(s, L) >= 100 ? '+' : '−') + num(Math.abs(rel(s, L) - 100), 0) + ' % vs. 2020') + '</span>' + spark(s, 24, 100, 28) + '</div>';
+    }).join('') + '</div><p class="pz-cut">Cambio de precio a ' + fecha(L) + '. Acero y chatarra se miden con índices, no en dólares, así que se muestran como cambio; el mineral, en dólares por tonelada.</p>' +
+      '<p class="pz-st" id="pzst">' + estadoTxt() + '</p>';
   }
 
   /* Gráfica principal: las tres series en índice, enero de 2020 = 100 */
@@ -63,7 +120,7 @@
     var dA = 100 * (A.d[L] / A.d[i232 - 1] - 1), dC = 100 * (C.d[L] / C.d[i232 - 1] - 1), dM = 100 * (M.d[L] / M.d[i232 - 1] - 1);
     return '<h3>Cómo leerla</h3><ul class="pz-lec">' +
       '<li><b>En 12 meses</b> el acero laminado va ' + pct(cambio(A, 12)) + ', la chatarra ' + pct(cambio(C, 12)) + ' y el mineral ' + pct(cambio(M, 12)) + '.</li>' +
-      '<li><b>Desde el arancel de 50 %</b> (junio de 2025) el acero en EE. UU. subió ' + pct(dA) + '; su materia prima mucho menos: chatarra ' + pct(dC) + ', mineral ' + pct(dM) + '. La brecha entre el precio y la carga metálica se abrió.</li>' +
+      '<li><b>Desde el arancel de 50 %</b> (junio de 2025) el acero en EE. UU. subió ' + pct(dA) + '; su materia prima mucho menos: chatarra ' + pct(dC) + ', mineral ' + pct(dM) + '. La diferencia entre lo que cobra la acería y lo que paga por su carga metálica, el margen metálico, se amplió.</li>' +
       '<li><b>El máximo</b> fue en ' + fecha(pk) + ', con la demanda pospandemia. Hoy el acero está ' + pct(100 * (A.d[L] / A.d[pk] - 1)) + ' respecto a ese pico.</li>' +
       '<li><b>El mineral no sigue al acero de EE. UU.:</b> su precio lo marca la demanda de China, que produce la mitad del acero del mundo.</li></ul>';
   }
@@ -79,7 +136,8 @@
       bloque(punto('acero') + punto('chatarra') + 'Acero laminado y chatarra', 'Índice de precios al productor (PPI) de la Oficina de Estadísticas Laborales de EE. UU. (BLS)', [
         ['Qué mide', 'Cuánto cambia, mes a mes, el precio al que las empresas de EE. UU. venden su producto. Es el precio desde el punto de vista del vendedor, y el BLS pide el precio real de la operación, no el de lista.'],
         ['Qué incluye', '<b>Acero laminado</b> (serie WPU1017): lámina en caliente y en frío, placa, barras, perfiles, alambre y tubo que salen de las acerías de EE. UU. <b>Chatarra</b> (WPU1012): la chatarra de hierro y acero que se vende como carga para las acerías.'],
-        ['Cómo leer el número', 'Es un índice, no dólares por tonelada. 1982 = 100, así que 388.6 quiere decir que el precio es 3.9 veces el de 1982. Sirve para ver cuánto subió o bajó, no para cotizar.'],
+        ['Cómo leer el número', 'Es un índice, no dólares por tonelada. Cada serie vale 100 en 1982: si el acero marca ' + num(P().series[0].d[P().series[0].d.length - 1], 0) + ', su precio es ' + num(P().series[0].d[P().series[0].d.length - 1] / 100, 1) + ' veces el de 1982. Sirve para ver cuánto subió o bajó, no para cotizar.'],
+        ['Los índices no se comparan entre sí', 'Que la chatarra marque ' + num(P().series[1].d[P().series[1].d.length - 1], 0) + ' y el acero ' + num(P().series[0].d[P().series[0].d.length - 1], 0) + ' no quiere decir que la chatarra cueste más: en dólares cuesta mucho menos, porque es materia prima del acero. Quiere decir que, desde 1982, el precio de la chatarra se multiplicó más. Por eso la gráfica pone las tres series en 100 en enero de 2020.'],
         ['Aranceles', 'Solo cuenta lo que venden productores de EE. UU.; el acero importado no entra. Si un arancel a la importación permite a las acerías locales subir sus precios, esa alza sí aparece en el índice.'],
         ['Cuándo sale', 'En la segunda semana del mes siguiente. Las cifras de los últimos cuatro meses son preliminares y pueden corregirse.']]) +
       bloque(punto('mineral') + 'Mineral de hierro', 'Precios de materias primas del Fondo Monetario Internacional (FMI)', [
@@ -91,7 +149,8 @@
       '<li><b>No son dólares por tonelada de acero.</b> Esos precios, como el rollo caliente que se usa en contratos y cotizaciones, los publican CRU, Platts y Fastmarkets por suscripción.</li>' +
       '<li><b>No descuentan la inflación.</b> Son precios corrientes de cada mes.</li>' +
       '<li><b>El mineral es el precio en China,</b> no lo que paga una acería mexicana por su pélet, que lleva premio por calidad y flete distinto.</li></ul>' +
-      '<p class="nota">Último mes con datos: ' + P().corte + '. Consultados en FRED en noviembre de 2026. La app no se actualiza sola: las cifras se cargan a mano.</p>';
+      '<h4>Cómo se mantiene al día</h4><p class="pz-p">Todos los días, un proceso automático en GitHub descarga las tres series de FRED y, si hay datos nuevos o corregidos, los guarda en el archivo de datos de la app. Cada vez que abres la app, esta lee ese archivo. Sin conexión, usa lo último que descargó.</p>' +
+      '<p class="nota">Último mes con datos: ' + fecha(P().series[0].d.length - 1) + '. FRED publica el acero y la chatarra a mediados del mes siguiente, y el mineral a principios.</p>';
   }
 
   S.preciosView = function () {
@@ -105,7 +164,7 @@
       var G;
       function leer(i) {
         root.querySelector('#pzv').innerHTML = '<b>' + fecha(i) + '</b>' + G.ss.map(function (s) {
-          return '<span style="--c:' + s.col + '"><i></i>' + s.n + ' <strong>' + valor(s, i) + '</strong> <small>' + pct(rel(s, i) - 100).replace('.0 %', ' %') + ' vs. ene 2020</small></span>';
+          return '<span style="--c:' + s.col + '"><i></i>' + s.n + ' ' + (s.u === 'USD/t' ? '<strong>' + valor(s, i) + '</strong> <small>' + pct(rel(s, i) - 100).replace('.0 %', ' %') + ' vs. ene 2020</small>' : '<strong>' + pct(rel(s, i) - 100).replace('.0 %', ' %') + '</strong> <small>vs. ene 2020</small>') + '</span>';
         }).join('');
         var c = root.querySelector('#pzc');
         if (i === G.n - 1 && !c.dataset.act) { c.style.display = 'none'; return; }
@@ -139,6 +198,7 @@
       });
       root.querySelector('#pzr').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; sel.r = b.dataset.r; guarda(sel); pintar(); });
       pintar();
+      if (!S._pzHora || Date.now() - S._pzHora > 600000) S.preciosRefrescar();
     } };
   };
 
@@ -149,4 +209,5 @@
     return '<a class="iv-tile pz-tile" href="#/industria/precios"><b>Precios del acero</b><div class="pz-tl"><div><strong>' + pct(c) + '</strong><span>acero laminado en EE. UU., últimos 12 meses</span></div>' + spark(A, 60, 160, 54) + '</div>' +
       '<span>Acero, chatarra y mineral desde 2015. Último dato: ' + fecha(L) + '.<i class="chev"></i></span></a>';
   };
+  setTimeout(function () { if (window.fetch && window.Promise) S.preciosRefrescar(); }, 1500);
 })();
