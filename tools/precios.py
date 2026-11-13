@@ -5,6 +5,9 @@ Lo corre GitHub Actions cada día hábil (.github/workflows/precios.yml).
 Fuentes:
   - Yahoo Finance (futuros de CME, primer vencimiento): rollo caliente EE. UU. y chatarra.
   - FRED (Reserva Federal de San Luis): mineral de hierro, metales y gas (FMI y EIA) y tipo de cambio.
+  - La chatarra busheling de CME dejó de cotizar en Yahoo en dic 2025. Si no hay contrato sucesor con
+    historia, los meses siguientes se estiman con el índice PPI de chatarra de acero al carbono (BLS):
+    último precio real × variación del índice. Esos meses quedan marcados en 'est'.
 Todo se guarda por mes, en USD por tonelada métrica salvo el gas (USD/MMBtu) y el tipo de cambio (MXN por USD).
 Si una fuente falla, se conserva la serie anterior del archivo.
 """
@@ -23,7 +26,9 @@ SERIES = [
     ('aluminio', 'fred', ['PALUMUSDM'], 1.0),
     ('gas', 'fred', ['MHHNGSP'], 1.0),
     ('mxn', 'fred', ['EXMXUS'], 1.0),
+    ('ppi', 'fred', ['WPU101211', 'WPU1012'], 1.0),   # interno: solo para estimar la chatarra
 ]
+INTERNAS = ('ppi',)
 SALIDA = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'precios.json')
 UA = {'User-Agent': 'handbook-siderurgico/1.0 (GitHub Actions)'}
 
@@ -57,7 +62,12 @@ def fred(codigo):
 def yahoo_uno(simbolo):
     """Promedio mensual de los cierres diarios de un futuro de CME en Yahoo Finance (yfinance maneja la sesión)."""
     import yfinance as yf
-    h = yf.Ticker(simbolo).history(period='max', interval='1d', auto_adjust=False)
+    t = yf.Ticker(simbolo)
+    try:
+        h = t.history(period='max', interval='1d', auto_adjust=False, raise_errors=True)
+    except Exception as e:
+        print('   %s: period=max falla (%s); se intenta con fecha de inicio' % (simbolo, str(e)[:80]), flush=True)
+        h = t.history(start='2014-12-01', interval='1d', auto_adjust=False)
     h = h[h['Close'].notna()]
     if not len(h):
         raise RuntimeError('sin datos')
@@ -115,17 +125,37 @@ def main():
         print(sid, diag[sid])
     if not crudo:
         raise SystemExit('Ninguna fuente respondió')
-    fin = max(max(c[0]) for c in crudo.values())
+    fin = max(max(c[0]) for sid, c in crudo.items() if sid not in INTERNAS)
+    est = None
+    if 'bus' in crudo and 'ppi' in crudo:
+        bm, pm = crudo['bus'][0], crudo['ppi'][0]
+        real = max(bm)
+        if real in pm and max(pm) > real:
+            comun = sorted(k for k in bm if k in pm)
+            cb = [bm[b] / bm[a] - 1 for a, b in zip(comun, comun[1:])]
+            cp = [pm[b] / pm[a] - 1 for a, b in zip(comun, comun[1:])]
+            mb, mp = sum(cb) / len(cb), sum(cp) / len(cp)
+            r = sum((x - mb) * (y - mp) for x, y in zip(cb, cp)) / (sum((x - mb) ** 2 for x in cb) * sum((y - mp) ** 2 for y in cp)) ** .5
+            k = siguiente(*real)
+            while k in pm:
+                bm[k] = bm[real] * pm[k] / pm[real]; k = siguiente(*k)
+            est = {'desde': '%04d-%02d' % siguiente(*real), 'codigo': crudo['ppi'][3], 'r': round(r, 2)}
+            diag['bus'] += '; estimado %s a %04d-%02d con %s (r=%.2f en cambios mensuales)' % (est['desde'], max(bm)[0], max(bm)[1], est['codigo'], r)
+            print('bus', diag['bus'])
     eje, k = [], INICIO
     while k <= fin:
         eje.append(k); k = siguiente(*k)
     series = {}
     for sid, fuente, codigos, factor in SERIES:
+        if sid in INTERNAS:
+            continue
         if sid in crudo:
             meses, ultimo, fac, codigo = crudo[sid]
             d = [round(meses[k] * fac, 2) if k in meses else None for k in eje]
             series[sid] = {'codigo': codigo, 'fuente': fuente, 'd': d,
                            'ultimo': {'f': ultimo['f'], 'v': round(ultimo['v'] * fac, 2)} if ultimo else None}
+            if sid == 'bus' and est:
+                series[sid]['est'] = est
         elif sid in viejo.get('series', {}):                 # la fuente falló hoy: se conserva lo anterior
             s = viejo['series'][sid]; s['d'] = (s['d'] + [None] * len(eje))[:len(eje)]
             series[sid] = s
