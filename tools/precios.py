@@ -5,9 +5,10 @@ Lo corre GitHub Actions cada día hábil (.github/workflows/precios.yml).
 Fuentes:
   - Yahoo Finance (futuros de CME, primer vencimiento): rollo caliente EE. UU. y chatarra.
   - FRED (Reserva Federal de San Luis): mineral de hierro, metales y gas (FMI y EIA) y tipo de cambio.
-  - La chatarra busheling de CME dejó de cotizar en Yahoo en dic 2025. Si no hay contrato sucesor con
-    historia, los meses siguientes se estiman con el índice PPI de chatarra de acero al carbono (BLS):
-    último precio real × variación del índice. Esos meses quedan marcados en 'est'.
+  - Chatarra: el contrato BUS de CME venció en dic 2025; su sucesor BCH solo da los días recientes en
+    Yahoo, así que cada corrida guarda el mes en curso y la historia real crece sola. Los meses sin
+    cotización se estiman con el índice PPI de chatarra de acero al carbono (BLS): último precio real ×
+    variación del índice. Esos meses quedan listados en 'est'.
 Todo se guarda por mes, en USD por tonelada métrica salvo el gas (USD/MMBtu) y el tipo de cambio (MXN por USD).
 Si una fuente falla, se conserva la serie anterior del archivo.
 """
@@ -63,10 +64,9 @@ def yahoo_uno(simbolo):
     """Promedio mensual de los cierres diarios de un futuro de CME en Yahoo Finance (yfinance maneja la sesión)."""
     import yfinance as yf
     t = yf.Ticker(simbolo)
-    try:
-        h = t.history(period='max', interval='1d', auto_adjust=False, raise_errors=True)
-    except Exception as e:
-        print('   %s: period=max falla (%s); se intenta con fecha de inicio' % (simbolo, str(e)[:80]), flush=True)
+    h = t.history(period='max', interval='1d', auto_adjust=False)
+    if not len(h):   # contratos nuevos: Yahoo solo da los últimos días
+        print('   %s: sin historia larga; se piden los días recientes' % simbolo, flush=True)
         h = t.history(start='2014-12-01', interval='1d', auto_adjust=False)
     h = h[h['Close'].notna()]
     if not len(h):
@@ -115,7 +115,8 @@ def main():
                 else:
                     meses, ultimo = fred(codigo)
                 meses = {k: v for k, v in meses.items() if k >= INICIO}
-                if len(meses) < 6:
+                minimo = 1 if sid == 'bus' and viejo.get('series', {}).get('bus') else 6   # BCH solo da el mes en curso
+                if len(meses) < minimo:
                     raise RuntimeError('solo %d meses' % len(meses))
                 crudo[sid] = (meses, ultimo, factor, codigo)
                 diag[sid] = 'ok %s: %d meses, %s a %s' % (codigo, len(meses), '%04d-%02d' % min(meses), '%04d-%02d' % max(meses))
@@ -127,21 +128,39 @@ def main():
         raise SystemExit('Ninguna fuente respondió')
     fin = max(max(c[0]) for sid, c in crudo.items() if sid not in INTERNAS)
     est = None
+    if 'bus' in crudo:
+        bm, fac_b = crudo['bus'][0], crudo['bus'][2]
+        vs = viejo.get('series', {}).get('bus')
+        if vs:                                  # meses reales de corridas anteriores (BCH solo da días recientes)
+            viejos_est = set((vs.get('est') or {}).get('m', []))
+            k = tuple(viejo.get('inicio', INICIO))
+            for v in vs['d']:
+                if v is not None and '%04d-%02d' % k not in viejos_est and k not in bm:
+                    bm[k] = v / fac_b
+                k = siguiente(*k)
     if 'bus' in crudo and 'ppi' in crudo:
         bm, pm = crudo['bus'][0], crudo['ppi'][0]
-        real = max(bm)
-        if real in pm and max(pm) > real:
-            comun = sorted(k for k in bm if k in pm)
-            cb = [bm[b] / bm[a] - 1 for a, b in zip(comun, comun[1:])]
-            cp = [pm[b] / pm[a] - 1 for a, b in zip(comun, comun[1:])]
+        reales = sorted(bm)
+        comun = [k for k in reales if k in pm]
+        pares = [(a, b) for a, b in zip(comun, comun[1:]) if b == siguiente(*a)]
+        cb = [bm[b] / bm[a] - 1 for a, b in pares]
+        cp = [pm[b] / pm[a] - 1 for a, b in pares]
+        try:
             mb, mp = sum(cb) / len(cb), sum(cp) / len(cp)
             r = sum((x - mb) * (y - mp) for x, y in zip(cb, cp)) / (sum((x - mb) ** 2 for x in cb) * sum((y - mp) ** 2 for y in cp)) ** .5
-            k = siguiente(*real)
-            while k in pm:
-                bm[k] = bm[real] * pm[k] / pm[real]; k = siguiente(*k)
-            est = {'desde': '%04d-%02d' % siguiente(*real), 'codigo': crudo['ppi'][3], 'r': round(r, 2)}
-            diag['bus'] += '; estimado %s a %04d-%02d con %s (r=%.2f en cambios mensuales)' % (est['desde'], max(bm)[0], max(bm)[1], est['codigo'], r)
-            print('bus', diag['bus'])
+        except ZeroDivisionError:
+            r = 0.0
+        estimados, k = [], reales[0]
+        while k <= max(max(pm), reales[-1]):
+            if k not in bm and k in pm:
+                prev = [x for x in comun if x < k]
+                if prev:
+                    a = prev[-1]; bm[k] = bm[a] * pm[k] / pm[a]; estimados.append('%04d-%02d' % k)
+            k = siguiente(*k)
+        if estimados:
+            est = {'m': estimados, 'codigo': crudo['ppi'][3], 'r': round(r, 2)}
+            diag['bus'] += '; %d meses estimados (%s a %s) con %s, r=%.2f en cambios mensuales' % (len(estimados), estimados[0], estimados[-1], est['codigo'], r)
+        print('bus', diag['bus'])
     eje, k = [], INICIO
     while k <= fin:
         eje.append(k); k = siguiente(*k)
