@@ -68,7 +68,7 @@
   /* Vista 1: tablero */
   function tablero() {
     return hero() +
-      '<div class="iv-kpi"><b>1 849</b><span>millones de toneladas de acero crudo en 2025</span></div>' + reparto() + accesos() +
+      '<div class="iv-kpi"><b>1 849</b><span>millones de toneladas de acero crudo en 2025</span></div>' + reparto() + accesos() + (S.preciosTile ? '<div class="pz-wrap">' + S.preciosTile() + '</div>' : '') +
       '<h3>México y Grupo Techint</h3><div class="iv-car">' + emp('mx').map(tarjetaMx).join('') + '</div>' +
       '<h3>Jugadores globales</h3><div class="iv-car">' + emp('gl').map(tarjetaGl).join('') + '</div>' + cadena() + nota();
   }

@@ -195,6 +195,7 @@
     if (p[0] && p[1] === 'mapa' && find(S.empresas, p[0])) return S.vistaMapa(p[0]);
     if (p[0] === 'ranking') return ranking();
     if (p[0] === 'panorama') return panorama();
+    if (p[0] === 'precios' && S.preciosView) return S.preciosView();
     if (p[0]) { var e = find(S.empresas, p[0]); if (e) return empresa(e); }
     function grupo(t, reg) {
       return '<h3>' + t + '</h3><ul class="rows">' + S.empresas.filter(function (e) { return e.reg === reg; }).map(function (e) { return row('#/industria/' + e.id, e.n, e.res, e.prod && /^\d/.test(e.prod) ? e.prod.split(' (')[0] : '', S.logo(e.id, 'row')); }).join('') + '</ul>';
@@ -208,7 +209,7 @@
     return S.industriaHome(h);
   };
   function panorama() {
-    var h = '<h3 style="margin-top:6px">El mundo en 2025</h3>' + S.kv(S.ind.mundo) + '<h3>México</h3>' + S.kv(S.ind.mexico) +
+    var h = (S.preciosTile ? '<ul class="rows">' + row('#/industria/precios', 'Tendencia de precios', 'Acero laminado, chatarra y mineral de hierro desde 2015') + '</ul>' : '') + '<h3 style="margin-top:14px">El mundo en 2025</h3>' + S.kv(S.ind.mundo) + '<h3>México</h3>' + S.kv(S.ind.mexico) +
       '<h3>Temas que mueven al sector</h3>' + S.ind.temas.map(function (t) { return '<h4>' + t[0] + '</h4><p>' + t[1] + '</p>'; }).join('') +
       '<h3>Cómo se gana dinero en acero</h3>' + S.ul(['El margen es la diferencia entre el precio del acero y el costo de la carga metálica (mineral y coque, o chatarra) más energía.', 'Es un negocio de costo fijo alto: la utilización de capacidad manda sobre la rentabilidad.', 'Integrarse hacia atrás (minas, chatarra, energía) estabiliza costos; hacia adelante (recubiertos, tubos, centros de servicio) captura valor agregado.', 'Las mini-acerías ajustan producción con rapidez; las integradas sufren más en los ciclos bajos.']) +
       '<h3>Fuentes</h3>' + S.ul(S.ind.fuentes);
