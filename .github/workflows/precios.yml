@@ -20,6 +20,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Instalar yfinance
+        run: python3 -m pip install --quiet --disable-pip-version-check yfinance
       - name: Descargar precios
         run: python3 -u tools/precios.py
       - name: Guardar si cambió

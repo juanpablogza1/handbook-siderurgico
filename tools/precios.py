@@ -26,7 +26,7 @@ SERIES = [
     ('mxn', 'fred', ['EXMXUS'], 1.0),
 ]
 SALIDA = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'precios.json')
-UA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'}
+UA = {'User-Agent': 'handbook-siderurgico/1.0 (GitHub Actions)'}
 
 
 def bajar(url, intentos=2):
@@ -56,32 +56,25 @@ def fred(codigo):
 
 
 def yahoo(simbolo):
-    j = None
-    error = None
-    for host in ('query1', 'query2'):
-        try:
-            j = json.loads(bajar('https://%s.finance.yahoo.com/v8/finance/chart/%s?range=15y&interval=1mo' % (host, simbolo.replace('=', '%3D')), intentos=1))
-            break
-        except Exception as e:
-            error = e
-    if not j:
-        raise RuntimeError(str(error))
-    r = j['chart']['result'][0]
-    ts, cierre = r.get('timestamp') or [], r['indicators']['quote'][0].get('close') or []
+    """Futuros de CME vía Yahoo Finance con la librería yfinance (maneja la sesión que Yahoo exige)."""
+    import yfinance as yf
+    t = yf.Ticker(simbolo)
+    h = t.history(period='max', interval='1mo', auto_adjust=False)
     meses = {}
-    for t, c in zip(ts, cierre):
-        if c is None:
+    for idx, fila in h.iterrows():
+        c = fila.get('Close')
+        if c is None or c != c:
             continue
-        d = datetime.datetime.fromtimestamp(t, datetime.timezone.utc)
-        meses[(d.year, d.month)] = float(c)
-    meta = r.get('meta', {})
-    precio, cuando = meta.get('regularMarketPrice'), meta.get('regularMarketTime')
-    if precio and cuando:
-        d = datetime.datetime.fromtimestamp(cuando, datetime.timezone.utc)
-        meses[(d.year, d.month)] = float(precio)          # el mes en curso con el último precio
-        ultimo = {'f': d.strftime('%Y-%m-%d'), 'v': float(precio)}
+        meses[(idx.year, idx.month)] = float(c)
+    d = t.history(period='1mo', interval='1d', auto_adjust=False)
+    d = d[d['Close'].notna()]
+    if len(d):
+        idx, c = d.index[-1], float(d['Close'].iloc[-1])
+        meses[(idx.year, idx.month)] = c                  # el mes en curso, con el último cierre diario
+        ultimo = {'f': idx.strftime('%Y-%m-%d'), 'v': c}
     else:
         ultimo = {'f': '%04d-%02d' % max(meses), 'v': meses[max(meses)]} if meses else None
+    print('   %s: %d meses' % (simbolo, len(meses)), flush=True)
     return meses, ultimo
 
 
