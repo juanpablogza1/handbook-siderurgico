@@ -29,14 +29,18 @@ SALIDA = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 
 UA = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36'}
 
 
-def bajar(url):
+def bajar(url, intentos=2):
     error = None
-    for intento in range(3):
+    for intento in range(intentos):
+        t0 = time.time()
         try:
-            return urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=60).read().decode('utf-8')
+            texto = urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=20).read().decode('utf-8')
+            print('   %s: %d bytes en %.1f s' % (url[:90], len(texto), time.time() - t0), flush=True)
+            return texto
         except Exception as e:
             error = e
-            time.sleep(4 * (intento + 1))
+            print('   %s: falla %s en %.1f s' % (url[:90], e, time.time() - t0), flush=True)
+            time.sleep(3)
     raise RuntimeError(str(error))
 
 
@@ -53,9 +57,10 @@ def fred(codigo):
 
 def yahoo(simbolo):
     j = None
+    error = None
     for host in ('query1', 'query2'):
         try:
-            j = json.loads(bajar('https://%s.finance.yahoo.com/v8/finance/chart/%s?range=max&interval=1mo' % (host, simbolo.replace('=', '%3D'))))
+            j = json.loads(bajar('https://%s.finance.yahoo.com/v8/finance/chart/%s?range=15y&interval=1mo' % (host, simbolo.replace('=', '%3D')), intentos=1))
             break
         except Exception as e:
             error = e
