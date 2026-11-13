@@ -67,10 +67,31 @@
       '<li><b>El máximo</b> fue en ' + fecha(pk) + ', con la demanda pospandemia. Hoy el acero está ' + pct(100 * (A.d[L] / A.d[pk] - 1)) + ' respecto a ese pico.</li>' +
       '<li><b>El mineral no sigue al acero de EE. UU.:</b> su precio lo marca la demanda de China, que produce la mitad del acero del mundo.</li></ul>';
   }
-  function series() {
-    return '<h3>Qué mide cada serie</h3><ul class="pz-ser">' + P().series.map(function (s) {
-      return '<li><i style="background:' + s.col + '"></i><span><b>' + s.n + '.</b> ' + s.q + ' <em>' + s.src + '.</em></span></li>';
-    }).join('') + '</ul><p class="nota">Son precios de EE. UU., la referencia de Norteamérica y del acero que importa México. El precio en dólares por tonelada del rollo caliente lo publican CRU y Platts por suscripción. Datos de FRED, Banco de la Reserva Federal de San Luis, actualizados en ' + P().actualizado + '.</p>';
+  /* De dónde salen los datos: explicación de cada fuente en lenguaje sencillo */
+  function fuentes() {
+    var c = {}; P().series.forEach(function (s) { c[s.id] = s.col; });
+    function punto(id) { return '<i class="pz-d" style="background:' + c[id] + '"></i>'; }
+    function bloque(tit, quien, filas) {
+      return '<div class="pz-src"><b>' + tit + '</b><span class="pz-who">' + quien + '</span><dl>' + filas.map(function (f) { return '<dt>' + f[0] + '</dt><dd>' + f[1] + '</dd>'; }).join('') + '</dl></div>';
+    }
+    return '<h3>De dónde salen estos precios</h3>' +
+      '<p class="pz-p">Las tres series vienen de <b>FRED</b>, la base de datos pública y gratuita de la Reserva Federal de San Luis. FRED no genera datos: reúne las series oficiales de decenas de fuentes, como la Oficina de Estadísticas Laborales de EE. UU. y el Fondo Monetario Internacional, y las publica tal cual. Aquí se usó para tomar las tres series con un mismo formato.</p>' +
+      bloque(punto('acero') + punto('chatarra') + 'Acero laminado y chatarra', 'Índice de precios al productor (PPI) de la Oficina de Estadísticas Laborales de EE. UU. (BLS)', [
+        ['Qué mide', 'Cuánto cambia, mes a mes, el precio al que las empresas de EE. UU. venden su producto. Es el precio desde el punto de vista del vendedor, y el BLS pide el precio real de la operación, no el de lista.'],
+        ['Qué incluye', '<b>Acero laminado</b> (serie WPU1017): lámina en caliente y en frío, placa, barras, perfiles, alambre y tubo que salen de las acerías de EE. UU. <b>Chatarra</b> (WPU1012): la chatarra de hierro y acero que se vende como carga para las acerías.'],
+        ['Cómo leer el número', 'Es un índice, no dólares por tonelada. 1982 = 100, así que 388.6 quiere decir que el precio es 3.9 veces el de 1982. Sirve para ver cuánto subió o bajó, no para cotizar.'],
+        ['Aranceles', 'Solo cuenta lo que venden productores de EE. UU.; el acero importado no entra. Si un arancel a la importación permite a las acerías locales subir sus precios, esa alza sí aparece en el índice.'],
+        ['Cuándo sale', 'En la segunda semana del mes siguiente. Las cifras de los últimos cuatro meses son preliminares y pueden corregirse.']]) +
+      bloque(punto('mineral') + 'Mineral de hierro', 'Precios de materias primas del Fondo Monetario Internacional (FMI)', [
+        ['Qué mide', 'El precio al contado de finos de mineral con 62 % de hierro, entregado en puerto de China (CFR Tianjin). Es el promedio del mes, en dólares por tonelada.'],
+        ['Por qué China', 'China compra la mayor parte del mineral que se vende por mar, así que este precio es la referencia mundial. Lo mueven sobre todo su construcción y su producción de acero.'],
+        ['Cuándo sale', 'A principios del mes siguiente.']]) +
+      '<h4>Lo que estas cifras no dicen</h4><ul class="pz-lec">' +
+      '<li><b>No son el precio en México.</b> Son la referencia pública más cercana: México importa cerca de un tercio del acero que consume y compite con el acero de EE. UU.</li>' +
+      '<li><b>No son dólares por tonelada de acero.</b> Esos precios, como el rollo caliente que se usa en contratos y cotizaciones, los publican CRU, Platts y Fastmarkets por suscripción.</li>' +
+      '<li><b>No descuentan la inflación.</b> Son precios corrientes de cada mes.</li>' +
+      '<li><b>El mineral es el precio en China,</b> no lo que paga una acería mexicana por su pélet, que lleva premio por calidad y flete distinto.</li></ul>' +
+      '<p class="nota">Último mes con datos: ' + P().corte + '. Consultados en FRED en noviembre de 2026. La app no se actualiza sola: las cifras se cargan a mano.</p>';
   }
 
   S.preciosView = function () {
@@ -79,7 +100,7 @@
       '<div class="po-card pz-card"><b class="po-ct">Tendencia de precios</b><p class="po-cs">Todas las series parten de 100 en enero de 2020, para comparar cuánto subió o bajó cada una. Desliza el dedo sobre la gráfica para leer cada mes.</p>' +
       '<div class="pz-ctl"><div class="pz-on" id="pzs">' + P().series.map(function (s) { return '<button type="button" data-s="' + s.id + '" style="--c:' + s.col + '"><i></i>' + s.n + '</button>'; }).join('') + '</div>' +
       '<div class="pf-rt pz-rg" id="pzr">' + RANGOS.map(function (r) { return '<button type="button" data-r="' + r[0] + '">' + r[1] + '</button>'; }).join('') + '</div></div>' +
-      '<div class="pz-read" id="pzv" aria-live="polite"></div><div id="pzg"></div><ol class="pz-ev" id="pze"></ol></div>' + lectura() + series();
+      '<div class="pz-read" id="pzv" aria-live="polite"></div><div id="pzg"></div><ol class="pz-ev" id="pze"></ol></div>' + lectura() + fuentes();
     return { title: 'Precios', html: h, after: function (root) {
       var G;
       function leer(i) {

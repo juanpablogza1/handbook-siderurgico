@@ -52,7 +52,7 @@
     return { title: 'Glosario', html: '<table class="kv">' + g.map(function (x) { return '<tr><th style="color:var(--tx);font-weight:650">' + x[0] + '</th><td style="font-weight:400">' + x[1] + '</td></tr>'; }).join('') + '</table>' };
   }
   function acerca() {
-    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.13.</p>' +
+    return { title: 'Acerca de esta app', html: '<h2>Siderúrgica</h2><p class="lead">Manual de referencia de la industria del acero. Versión 1.14.</p>' +
       '<h3>Alcance</h3>' + S.ul(['Los valores de proceso son rangos típicos de la industria; cada planta tiene los suyos.', 'Los valores de normas son mínimos representativos. Para comprar, diseñar o certificar rige la edición vigente del documento oficial.', 'El simulador usa correlaciones empíricas publicadas. Orienta, no sustituye un ensayo.', 'Los datos de empresas corresponden a ' + S.ind.corte + '. Directivos y accionistas cambian.', 'Los fabricantes de equipo son los más comunes de cada proceso, no todos. Sus talleres y dueños también cambian.', 'El mapa ubica una selección de acerías y minas de hierro de forma aproximada, con capacidades nominales. Base cartográfica: Natural Earth.']) +
       '<h3>Fuentes de la sección Industria</h3>' + S.ul(S.ind.fuentes) +
       '<h3>Uso sin conexión</h3><p>Una vez instalada, la app guarda todo su contenido en el teléfono y funciona sin internet.</p>' + S.installBox() };
