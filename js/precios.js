@@ -70,7 +70,8 @@
   function cambio(s, k) { var L = ultimoI(s), a = s.d[L], b = s.d[L - k]; return a != null && b != null ? 100 * (a / b - 1) : null; }
   function chip(v, txt) { return v == null ? '' : '<span><b class="' + (v >= 0 ? 'up' : 'dn') + '">' + pct(v) + '</b> ' + txt + '</span>'; }
 
-  /* Datos en línea: GitHub Actions deja data/precios.json en el repositorio; la app lo lee al abrirse.
+  /* Datos en línea: GitHub Actions deja data/precios.json en el repositorio; la app lo lee al abrirse del mismo
+     servidor que la app (funciona en cualquier hospedaje) y, si falla o está atrasado, directo de GitHub.
      Sin red usa lo último que descargó y, si nunca se conectó, los datos incluidos en la app. */
   var RAW = 'https://raw.githubusercontent.com/juanpablogza1/handbook-siderurgico/main/data/precios.json', CACHE = 'sid.preciosData2';
   var est = { origen: 'incluido', error: false };
@@ -101,7 +102,8 @@
   S.preciosRefrescar = function () {
     if (S._pzCarga) return S._pzCarga;
     var antes = marca(D());
-    S._pzCarga = bajar(RAW).catch(function () { return bajar('data/precios.json'); }).then(function (j) {
+    S._pzCarga = bajar('data/precios.json').then(function (j) { if (!valido(j) || marca(j) < antes) throw new Error('viejo'); return j; })
+      .catch(function () { return bajar(RAW); }).then(function (j) {
       if (!valido(j)) throw new Error('datos inválidos');
       if (marca(j) < antes) throw new Error('datos más viejos que los guardados');
       S.preciosData = j; est = { origen: 'en línea', error: false };
